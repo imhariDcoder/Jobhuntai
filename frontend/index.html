@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SmartJobAI -- Profile</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark">SJ</span>
+        SmartJobAI
+      </a>
+      <nav class="tabs">
+        <a href="/" class="active">Profile</a>
+        <a href="/jd">Tailor to a Job</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="page">
+    <h1>Your Profile</h1>
+    <p class="lede">
+      Fill this out once, then keep it current. <strong>Save Profile</strong>
+      persists your changes so they're ready the next time you tailor a
+      resume to a job description. <strong>Save &amp; Preview PDF</strong>
+      does the same save, plus renders a PDF you can review before
+      downloading.
+    </p>
+
+    <form id="profile-form">
+      <h2>Header</h2>
+      <div class="card">
+        <div class="row-2">
+          <div><label>Name</label><input type="text" id="field-name" /></div>
+          <div><label>Phone</label><input type="text" id="field-phone" /></div>
+        </div>
+        <div class="row-2">
+          <div><label>Email</label><input type="text" id="field-email" /></div>
+          <div><label>Location</label><input type="text" id="field-location" /></div>
+        </div>
+        <div class="row-2">
+          <div><label>LinkedIn</label><input type="text" id="field-linkedin" /></div>
+          <div><label>GitHub</label><input type="text" id="field-github" /></div>
+        </div>
+        <label>Professional Summary</label>
+        <textarea id="field-summary"></textarea>
+      </div>
+
+      <h2>Education</h2>
+      <div id="education-list"></div>
+      <button type="button" class="add" id="add-education">+ Add education</button>
+
+      <h2>Experience &amp; Training</h2>
+      <div id="experience-list"></div>
+      <button type="button" class="add" id="add-experience">+ Add experience / training entry</button>
+
+      <h2>Projects</h2>
+      <div id="projects-list"></div>
+      <button type="button" class="add" id="add-project">+ Add project</button>
+
+      <h2>Skills</h2>
+      <div id="skills-list"></div>
+      <button type="button" class="add" id="add-skill">+ Add skill category</button>
+
+      <h2>Certifications</h2>
+      <div id="certifications-list"></div>
+      <button type="button" class="add" id="add-certification">+ Add certification</button>
+
+      <div class="action-bar">
+        <button type="button" class="secondary" id="save-profile">Save Profile</button>
+        <button type="submit" class="primary">Save &amp; Preview PDF</button>
+        <div id="status"></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-overlay" id="pdf-modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Resume Preview</h3>
+        <button type="button" class="modal-close" id="pdf-modal-close">&times;</button>
+      </div>
+      <div class="modal-body"><iframe id="pdf-modal-iframe"></iframe></div>
+      <div class="modal-footer">
+        <button type="button" class="primary" id="pdf-modal-download">Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/ui.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

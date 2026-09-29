@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SmartJobAI -- Tailor to a Job Description</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark">SJ</span>
+        SmartJobAI
+      </a>
+      <nav class="tabs">
+        <a href="/">Profile</a>
+        <a href="/jd" class="active">Tailor to a Job</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="page">
+    <h1>Tailor Your Resume to a Job Description</h1>
+    <p class="lede">
+      Paste a job description. The AI picks and rewords a subset of your
+      <em>own</em> stored resume bullets to match it -- it never invents new
+      bullets or content. You'll see exactly what changed before downloading
+      anything.
+    </p>
+
+    <form id="jd-form">
+      <div class="card">
+        <div class="row-2">
+          <div>
+            <label>AI provider</label>
+            <select id="field-provider">
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+              <option value="gemini">Google Gemini</option>
+            </select>
+          </div>
+          <div>
+            <label>Your API key for the selected provider</label>
+            <input type="password" id="field-api-key" placeholder="API key" autocomplete="off" />
+          </div>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.5rem;">
+          Your key is sent with this request only. It is never stored on the
+          server -- it is kept in this browser tab's session storage only
+          (cleared when the tab closes). Each provider's key is remembered
+          separately.
+        </p>
+
+        <label>Job description</label>
+        <textarea id="field-jd" style="min-height: 12em;" placeholder="Paste the full job description here"></textarea>
+      </div>
+
+      <div class="action-bar">
+        <button type="submit" class="primary" id="preview-btn">Tailor My Resume</button>
+        <div id="status"></div>
+      </div>
+    </form>
+
+    <div id="results" style="display: none;">
+      <h2>Match Score</h2>
+      <div class="card">
+        <div class="score-row">
+          <div class="score-value" id="score-value">0%</div>
+          <div class="score-bar-track"><div class="score-bar-fill" id="score-bar" style="width: 0%;"></div></div>
+        </div>
+        <div id="matched-chips" class="chip-list"></div>
+        <div id="missing-chips" class="chip-list"></div>
+        <p id="missing-note" style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0.5rem 0 0;"></p>
+        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin: 0.5rem 0 0;">
+          Click a missing keyword you <em>actually have experience with</em> to
+          add it to your stored Skills -- this doesn't rewrite any bullet, it
+          just records a skill you're confirming you have, so it counts
+          toward this and future job matches.
+        </p>
+        <div id="add-keywords-bar" style="display: none; margin-top: 0.75rem;">
+          <button type="button" class="add" id="add-keywords-btn"></button>
+          <div id="add-keywords-status"></div>
+        </div>
+      </div>
+
+      <h2>What the AI Changed</h2>
+      <div id="diffs-list"></div>
+      <div id="no-diffs-message" class="empty-state" style="display: none;">
+        No stored bullets closely matched this job description -- try adding
+        more relevant experience to your profile, or a broader job
+        description.
+      </div>
+
+      <div class="action-bar-static">
+        <button type="button" class="primary" id="preview-pdf-btn">Preview PDF</button>
+        <div id="download-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="pdf-modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Tailored Resume Preview</h3>
+        <button type="button" class="modal-close" id="pdf-modal-close">&times;</button>
+      </div>
+      <div class="modal-body"><iframe id="pdf-modal-iframe"></iframe></div>
+      <div class="modal-footer">
+        <button type="button" class="primary" id="pdf-modal-download">Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/ui.js"></script>
+  <script src="/static/jd.js"></script>
+</body>
+</html>

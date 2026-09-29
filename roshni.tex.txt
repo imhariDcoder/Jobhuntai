@@ -1,0 +1,205 @@
+%-------------------------
+% Modern ATS-Friendly Resume in LaTeX
+% Author: Roshni Lenka
+% Compiler: pdfLaTeX (Overleaf default)
+%-------------------------
+
+\documentclass[letterpaper,10.5pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{fontawesome5}
+\input{glyphtounicode}
+
+\geometry{top=0.45in, bottom=0.45in, left=0.55in, right=0.55in}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+\pdfgentounicode=1
+
+%-------------------------
+% Brand Color
+%-------------------------
+\definecolor{accent}{RGB}{26, 82, 118}
+\definecolor{subtext}{RGB}{80, 80, 80}
+\definecolor{rulecolor}{RGB}{180, 200, 215}
+\definecolor{fillflag}{RGB}{178, 34, 34}
+
+%-------------------------
+% Section Formatting
+%-------------------------
+\titleformat{\section}{
+  \vspace{-6pt}\color{accent}\scshape\raggedright\normalsize\bfseries
+}{}{0em}{}[{\color{rulecolor}\titlerule[0.6pt]} \vspace{-4pt}]
+
+%-------------------------
+% Custom Commands
+%-------------------------
+\newcommand{\resumeItem}[1]{
+  \item\small{#1}
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-1pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{\small#1} & \small\textcolor{subtext}{#2} \\
+      \textcolor{accent}{\small\textit{#3}} & \textcolor{subtext}{\footnotesize#4} \\
+    \end{tabular*}\vspace{-6pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+  \item
+  \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+    \small#1 & \textcolor{subtext}{\small #2} \\
+  \end{tabular*}\vspace{-6pt}
+}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=0.2in, itemsep=2pt, parsep=0pt, topsep=2pt]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-4pt}}
+\newcommand{\resumeCertListEnd}{\end{itemize}\vspace{-10pt}}
+
+%============================================================
+%                   DOCUMENT STARTS HERE
+%============================================================
+\begin{document}
+
+%-------------------------
+% HEADER
+%-------------------------
+\begin{center}
+    {\Huge \textbf{\textcolor{accent}{Roshni Lenka}}} \\ \vspace{4pt}
+    {\small \textcolor{subtext}{\ $\ $ \ \ $\ $ \  \ $ $ \ \ $ $ \  \ $ $ \ }} \\ \vspace{6pt}
+    \small
+    \small
+    \faPhone\ +91-6370073842 \quad
+    \faEnvelope\ \href{mailto:roshnilenka063@gmail.com}{roshnilenka063@gmail.com} \quad
+    \faLinkedin\ \href{https://linkedin.com/in/roshni-lenka}{https://linkedin.com/in/roshni-lenka} \quad
+    \faGithub\ \href{https://github.com/Roshnilenka}{https://github.com/Roshnilenka}
+\end{center}
+
+\vspace{-6pt}
+\noindent\textcolor{rulecolor}{\rule{\textwidth}{1pt}}
+\vspace{-4pt}
+
+%-------------------------
+% PROFESSIONAL SUMMARY
+%-------------------------
+\section{Professional Summary}
+\small{Aspiring Data Analyst with hands-on project experience in exploratory data analysis, data cleaning, and dashboarding using Python, SQL, Power BI, and Tableau. Comfortable moving from raw, inconsistent data to clear, decision-ready insights, with additional exposure to machine learning model building and test automation using Selenium. Fresher with a strong project portfolio, structured self-directed learning, and a fast ramp-up on new tools and datasets.}
+
+%-------------------------
+% TRAINING & APPLIED LEARNING
+%-------------------------
+\section{Training \& Applied Learning}
+  \resumeSubHeadingListStart
+
+    \resumeSubheading
+      {Data Analytics Bootcamp -- Structured Learning Program}{May 2024 -- Jun 2024}
+      {InternPe}{Remote}
+      \resumeItemListStart
+        \resumeItem{Completed a structured, self-paced data analytics program covering EDA, data cleaning, and reporting on real-world datasets.}
+        \resumeItem{Independently handled missing values, outliers, and inconsistent formatting across multiple assignment datasets to produce analysis-ready data.}
+        \resumeItem{Delivered analysis summaries and visualizations as program milestones, applying feature selection to narrow down key variables for reporting.}
+      \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+
+%-------------------------
+% PROJECTS
+%-------------------------
+\section{Projects}
+    \resumeSubHeadingListStart
+
+      \resumeProjectHeading
+        {\textbf{RetailSense -- Customer Purchase Behavior Analysis} $|$ \textcolor{accent}
+        {\emph{Python, Pandas, NumPy, Matplotlib, Seaborn}}}{2025}
+        
+        \resumeItemListStart
+          \resumeItem{Analyzed 50,000+ retail transactions to uncover buying patterns, seasonal demand trends, and high-value customer segments.}
+          \resumeItem{Performed end-to-end EDA including data cleaning, null handling, outlier detection, and feature engineering on raw transactional data.}
+          \resumeItem{Delivered stakeholder-ready insights and KPI tracking on customer segmentation, identifying the top 20\% of customers driving 65\% of revenue to inform targeted marketing strategy.}
+        \resumeItemListEnd
+
+      \resumeProjectHeading
+        {\textbf{HireIQ -- HR Analytics Dashboard} $|$ \textcolor{accent}{\emph{Power BI, Tableau, Excel, Python}}}{2025}
+        \resumeItemListStart
+          \resumeItem{Built cross-functional BI dashboards in Power BI and Tableau using DAX and Power Query, enabling root cause analysis on attrition through drill-through reporting.}
+          \resumeItem{Implemented data validation checks during ETL using Python and Excel, reducing data inconsistencies by 30\% and improving reporting accuracy.}
+          \resumeItem{Tracked KPIs across department-wise performance and hiring funnel metrics to support proactive retention decisions.}
+        \resumeItemListEnd
+
+      \resumeProjectHeading
+        {\textbf{Facial Emotion Recognition -- Deep Learning \& Computer Vision} $|$ \textcolor{accent}{\emph{Python, TensorFlow, OpenCV, CNN}}}{2025}
+        \resumeItemListStart
+          \resumeItem{Designed and developed a CNN-based facial emotion recognition system using Python and TensorFlow to classify facial expressions into 7 emotions.}
+          \resumeItem{Built a real-time emotion detection pipeline using OpenCV for face detection and image preprocessing, enabling live webcam-based emotion prediction.}
+          \resumeItem{Trained and evaluated the model on the FER-2013 dataset (35,000+ facial images), improving classification performance through image normalization and data preprocessing.}
+        \resumeItemListEnd
+
+    \resumeSubHeadingListEnd
+
+%-------------------------
+% TECHNICAL SKILLS
+%-------------------------
+\section{Technical Skills}
+\begin{itemize}[leftmargin=0.15in, label={}]
+  \small\item{ 
+    \textbf{\textcolor{accent}{Programming \& Query Languages:}} Python, SQL \\[3pt]
+    \textbf{\textcolor{accent}{BI \& Visualization:}} Power BI, DAX, Power Query, Tableau, Excel (Advanced), Matplotlib, Seaborn \\[3pt]
+    \textbf{\textcolor{accent}{Data \& Databases:}} Pandas, NumPy, Data Modeling \\[3pt]
+    \textbf{\textcolor{accent}{Machine Learning (exposure):}} Scikit-learn fundamentals, TensorFlow, CNNs \\[3pt]
+    \textbf{\textcolor{accent}{Testing \& Automation (exposure):}} Selenium (basic test automation) \\[3pt]
+    \textbf{\textcolor{accent}{Tools:}} Git, GitHub \\[3pt]
+    \textbf{\textcolor{accent}{Concepts:}} Exploratory Data Analysis, Data Cleaning, Data Validation, Statistical Analysis, Stakeholder Management, OOP
+  }
+\end{itemize}
+\vspace{-14pt}
+
+%-------------------------
+% CERTIFICATIONS
+%-------------------------
+\section{Certifications}
+  \resumeSubHeadingListStart
+    \resumeProjectHeading
+      {\textbf{Data Analytics Job Simulation} $|$ \textcolor{subtext}{\emph{Deloitte Australia, via Forage}}}{2026}
+    \resumeProjectHeading
+      {\textbf{Artificial Intelligence \& Machine Learning Course} $|$ \textcolor{subtext}{\emph{Tutedue}}}{2024}
+    \resumeProjectHeading
+      {\textbf{Google Data Analytics Certification} $|$ \textcolor{subtext}{\emph{Coursera -- In Progress}}}{Expected 2026}
+  \resumeSubHeadingListEnd
+
+%-------------------------
+% EDUCATION
+%-------------------------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Bachelor of Technology (B.Tech) -- Computer Science \& Engineering}{2025}
+      {Balasore College of Engineering \& Technology}{Balasore, Odisha}
+      \resumeItemListStart
+        \resumeItem{CGPA: \textbf{8.36 / 10}}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+%============================================================
+\end{document}

@@ -2,116 +2,167 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SmartJobAI -- Tailor to a Job Description</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartJobAI — Tailor to a Job Description</title>
+  <link rel="stylesheet" href="/static/style.css?v=1.0.5" />
 </head>
 <body>
-  <div class="topbar">
+  <header class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="/">
-        <span class="brand-mark">SJ</span>
-        SmartJobAI
+        <svg class="brand-symbol" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="3" fill="#0d1218" stroke="rgba(223,231,224,0.14)"/>
+          <circle cx="16" cy="16" r="6.5" fill="#e0231c"/>
+          <rect x="7" y="9" width="18" height="1.8" fill="#dfe7e0" opacity="0.85"/>
+          <rect x="10" y="13" width="12" height="1.5" fill="#dfe7e0" opacity="0.6"/>
+        </svg>
+        <span class="brand-text">
+          <b>SmartJob</b>
+          <i>AI · LaTeX Engine</i>
+        </span>
       </a>
       <nav class="tabs">
-        <a href="/">Profile</a>
+        <a href="/">Master Profile</a>
         <a href="/jd" class="active">Tailor to a Job</a>
       </nav>
     </div>
-  </div>
+  </header>
 
-  <div class="page">
-    <h1>Tailor Your Resume to a Job Description</h1>
-    <p class="lede">
-      Paste a job description. The AI picks and rewords a subset of your
-      <em>own</em> stored resume bullets to match it -- it never invents new
-      bullets or content. You'll see exactly what changed before downloading
-      anything.
-    </p>
+  <main class="page">
+    <div class="hero">
+      <div class="eyebrow">
+        <span class="dot"></span>
+        Target Alignment · Chapter II
+      </div>
+      <h1>Tailor Resume to a Job Description</h1>
+      <p class="lede">
+        Paste a target role below. SmartJobAI extracts keyword demand, ranks your most relevant bullets, and refines wording to mirror the job's phrasing — <strong>strictly without ever fabricating facts, tools, or metrics</strong>.
+      </p>
+    </div>
 
     <form id="jd-form">
       <div class="card">
         <div class="row-2">
           <div>
-            <label>AI provider</label>
+            <label for="field-provider">AI Model Provider</label>
             <select id="field-provider">
-              <option value="openai">OpenAI</option>
-              <option value="anthropic">Anthropic (Claude)</option>
-              <option value="gemini">Google Gemini</option>
+              <option value="gemini">Google Gemini (Recommended)</option>
+              <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
+              <option value="anthropic">Anthropic (Claude 3.5 Sonnet / Haiku)</option>
             </select>
           </div>
           <div>
-            <label>Your API key for the selected provider</label>
-            <input type="password" id="field-api-key" placeholder="API key" autocomplete="off" />
+            <label for="field-api-key">Provider API Key</label>
+            <div class="password-input-wrap">
+              <input type="password" id="field-api-key" placeholder="Paste your API key here" autocomplete="off" />
+              <button type="button" class="password-toggle-btn" id="toggle-api-key" title="Show / Hide Key">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" id="eye-icon">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.5rem;">
-          Your key is sent with this request only. It is never stored on the
-          server -- it is kept in this browser tab's session storage only
-          (cleared when the tab closes). Each provider's key is remembered
-          separately.
-        </p>
 
-        <label>Job description</label>
-        <textarea id="field-jd" style="min-height: 12em;" placeholder="Paste the full job description here"></textarea>
+        <div class="provider-info-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--vermilion)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>
+            <strong>Zero Server Retention:</strong> Your key is held in your browser session memory only and transmitted securely to authenticate your tailoring request.
+          </span>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1.5rem; margin-bottom: 0.4rem;">
+          <label for="field-jd" style="margin: 0;">Target Job Description</label>
+          <button type="button" class="quick-link-btn" id="load-sample-jd">
+            + Paste Sample Data Analyst JD
+          </button>
+        </div>
+        <textarea id="field-jd" style="min-height: 14em;" placeholder="Paste the complete job description, responsibilities, and requirements here..."></textarea>
       </div>
 
       <div class="action-bar">
-        <button type="submit" class="primary" id="preview-btn">Tailor My Resume</button>
+        <button type="submit" class="primary" id="preview-btn">Analyze &amp; Tailor Resume</button>
         <div id="status"></div>
       </div>
     </form>
 
     <div id="results" style="display: none;">
-      <h2>Match Score</h2>
-      <div class="card">
-        <div class="score-row">
-          <div class="score-value" id="score-value">0%</div>
-          <div class="score-bar-track"><div class="score-bar-fill" id="score-bar" style="width: 0%;"></div></div>
+      <div class="section-header">
+        <span class="section-eyebrow"><b>01</b> / Metrics</span>
+        <h2>Keyword Match Analysis</h2>
+        <span class="rule"></span>
+      </div>
+
+      <div class="card score-card">
+        <div class="score-header">
+          <label style="margin: 0;">ATS Compatibility Score</label>
+          <div class="score-row">
+            <div class="score-value" id="score-value">0%</div>
+            <div class="score-bar-track">
+              <div class="score-bar-fill" id="score-bar" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chip-group-label">
+          Matched Keywords (Present in Profile)
         </div>
         <div id="matched-chips" class="chip-list"></div>
+
+        <div class="chip-group-label" style="margin-top: 1.25rem;">
+          Missing Keywords (Required by JD)
+        </div>
         <div id="missing-chips" class="chip-list"></div>
-        <p id="missing-note" style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0.5rem 0 0;"></p>
-        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin: 0.5rem 0 0;">
-          Click a missing keyword you <em>actually have experience with</em> to
-          add it to your stored Skills -- this doesn't rewrite any bullet, it
-          just records a skill you're confirming you have, so it counts
-          toward this and future job matches.
+
+        <p id="missing-note" style="font-size: 12px; color: var(--muted); margin: 0.6rem 0 0;"></p>
+        <p style="font-size: 11.5px; color: var(--muted); margin: 0.3rem 0 0;">
+          Tip: Click any missing keyword you possess to claim and append it to your master profile skills.
         </p>
-        <div id="add-keywords-bar" style="display: none; margin-top: 0.75rem;">
-          <button type="button" class="add" id="add-keywords-btn"></button>
+
+        <div id="add-keywords-bar" style="display: none; margin-top: 1rem;">
+          <button type="button" class="add" id="add-keywords-btn" style="border-style: solid; background: rgba(224, 35, 28, 0.08); border-color: var(--vermilion); color: var(--bone);"></button>
           <div id="add-keywords-status"></div>
         </div>
       </div>
 
-      <h2>What the AI Changed</h2>
+      <div class="section-header">
+        <span class="section-eyebrow"><b>02</b> / Diff</span>
+        <h2>Tailored Bullet Changes</h2>
+        <span class="rule"></span>
+      </div>
+
       <div id="diffs-list"></div>
       <div id="no-diffs-message" class="empty-state" style="display: none;">
-        No stored bullets closely matched this job description -- try adding
-        more relevant experience to your profile, or a broader job
-        description.
+        No stored bullets matched this job description — try adding more relevant experience to your profile, or testing with a broader job description.
       </div>
 
       <div class="action-bar-static">
-        <button type="button" class="primary" id="preview-pdf-btn">Preview PDF</button>
+        <button type="button" class="primary" id="preview-pdf-btn">Preview Tailored PDF</button>
         <div id="download-status"></div>
       </div>
     </div>
-  </div>
+  </main>
 
   <div class="modal-overlay" id="pdf-modal-overlay" style="display: none;">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>Tailored Resume Preview</h3>
-        <button type="button" class="modal-close" id="pdf-modal-close">&times;</button>
+        <h3>Tailored Resume PDF Preview</h3>
+        <button type="button" class="modal-close" id="pdf-modal-close" title="Close Preview">&times;</button>
       </div>
       <div class="modal-body"><iframe id="pdf-modal-iframe"></iframe></div>
       <div class="modal-footer">
-        <button type="button" class="primary" id="pdf-modal-download">Download PDF</button>
+        <button type="button" class="secondary" onclick="closePdfPreview()">Close</button>
+        <button type="button" class="primary" id="pdf-modal-download">Download Tailored PDF</button>
       </div>
     </div>
   </div>
 
-  <script src="/static/ui.js"></script>
+  <script src="/static/mountain-canvas.js"></script>
+  <script src="/static/ui.js?v=1.0.5"></script>
   <script src="/static/jd.js"></script>
 </body>
 </html>

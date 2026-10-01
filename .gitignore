@@ -6,3 +6,5 @@ backend/data/
 .env
 *.pdf
 .claude/
+.agents/
+

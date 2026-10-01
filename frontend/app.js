@@ -54,6 +54,13 @@ function labeledSelect(labelText, value, options, onInput) {
   return wrap;
 }
 
+function createRemoveButton(label, onClick) {
+  const btn = el("button", { class: "remove", type: "button" });
+  btn.textContent = "[ " + label.toLowerCase() + " ]";
+  btn.addEventListener("click", onClick);
+  return btn;
+}
+
 function bulletsEditor(bullets, onChange) {
   const container = el("div");
 
@@ -61,16 +68,16 @@ function bulletsEditor(bullets, onChange) {
     container.innerHTML = "";
     bullets.forEach((b, i) => {
       const row = el("div", { class: "bullet-row" });
-      const textArea = el("textarea", { placeholder: "Bullet text" });
+      const textArea = el("textarea", { placeholder: "Bullet accomplishment..." });
       textArea.value = b.text || "";
       textArea.addEventListener("input", (e) => { b.text = e.target.value; });
 
-      const kwInput = el("input", { type: "text", placeholder: "keywords, comma, separated" });
+      const kwInput = el("input", { type: "text", placeholder: "skills, keywords (csv)" });
       kwInput.value = (b.keywords || []).join(", ");
       kwInput.addEventListener("input", (e) => { b.keywords = csvToList(e.target.value); });
 
-      const removeBtn = el("button", { class: "remove", type: "button" });
-      removeBtn.textContent = "Remove";
+      const removeBtn = el("button", { class: "remove", type: "button", title: "Remove bullet" });
+      removeBtn.textContent = "[ × ]";
       removeBtn.addEventListener("click", () => {
         bullets.splice(i, 1);
         render();
@@ -84,7 +91,7 @@ function bulletsEditor(bullets, onChange) {
     });
 
     const addBtn = el("button", { class: "add", type: "button" });
-    addBtn.textContent = "+ Add bullet";
+    addBtn.textContent = "+ Add bullet point";
     addBtn.addEventListener("click", () => {
       bullets.push({ text: "", keywords: [] });
       render();
@@ -129,13 +136,12 @@ function renderEducation() {
         edu.details = v.split("\n").map((x) => x.trim()).filter(Boolean);
       })
     );
-    const removeBtn = el("button", { class: "remove", type: "button" });
-    removeBtn.textContent = "Remove education entry";
-    removeBtn.addEventListener("click", () => {
-      profileData.education.splice(i, 1);
-      renderEducation();
-    });
-    entry.appendChild(removeBtn);
+    entry.appendChild(
+      createRemoveButton("Remove education entry", () => {
+        profileData.education.splice(i, 1);
+        renderEducation();
+      })
+    );
     container.appendChild(entry);
   });
 }
@@ -158,13 +164,12 @@ function renderExperience() {
     entry.appendChild(labeledInput("Location", exp.location, (v) => (exp.location = v)));
     entry.appendChild(el("label", {}, [document.createTextNode("Bullets")]));
     entry.appendChild(bulletsEditor(exp.bullets, () => {}));
-    const removeBtn = el("button", { class: "remove", type: "button" });
-    removeBtn.textContent = "Remove experience entry";
-    removeBtn.addEventListener("click", () => {
-      profileData.experience.splice(i, 1);
-      renderExperience();
-    });
-    entry.appendChild(removeBtn);
+    entry.appendChild(
+      createRemoveButton("Remove experience entry", () => {
+        profileData.experience.splice(i, 1);
+        renderExperience();
+      })
+    );
     container.appendChild(entry);
   });
 }
@@ -196,13 +201,12 @@ function renderProjects() {
     entry.appendChild(row2);
     entry.appendChild(el("label", {}, [document.createTextNode("Bullets")]));
     entry.appendChild(bulletsEditor(proj.bullets, () => {}));
-    const removeBtn = el("button", { class: "remove", type: "button" });
-    removeBtn.textContent = "Remove project";
-    removeBtn.addEventListener("click", () => {
-      profileData.projects.splice(i, 1);
-      renderProjects();
-    });
-    entry.appendChild(removeBtn);
+    entry.appendChild(
+      createRemoveButton("Remove project", () => {
+        profileData.projects.splice(i, 1);
+        renderProjects();
+      })
+    );
     container.appendChild(entry);
   });
 }
@@ -220,13 +224,12 @@ function renderSkills() {
       })
     );
     entry.appendChild(row);
-    const removeBtn = el("button", { class: "remove", type: "button" });
-    removeBtn.textContent = "Remove skill category";
-    removeBtn.addEventListener("click", () => {
-      profileData.skills.splice(i, 1);
-      renderSkills();
-    });
-    entry.appendChild(removeBtn);
+    entry.appendChild(
+      createRemoveButton("Remove skill category", () => {
+        profileData.skills.splice(i, 1);
+        renderSkills();
+      })
+    );
     container.appendChild(entry);
   });
 }
@@ -241,13 +244,12 @@ function renderCertifications() {
     row.appendChild(labeledInput("Date", cert.date, (v) => (cert.date = v)));
     entry.appendChild(row);
     entry.appendChild(labeledInput("Issuing org", cert.org, (v) => (cert.org = v)));
-    const removeBtn = el("button", { class: "remove", type: "button" });
-    removeBtn.textContent = "Remove certification";
-    removeBtn.addEventListener("click", () => {
-      profileData.certifications.splice(i, 1);
-      renderCertifications();
-    });
-    entry.appendChild(removeBtn);
+    entry.appendChild(
+      createRemoveButton("Remove certification", () => {
+        profileData.certifications.splice(i, 1);
+        renderCertifications();
+      })
+    );
     container.appendChild(entry);
   });
 }

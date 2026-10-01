@@ -557,6 +557,11 @@ select option {
   opacity: 0;
 }
 
+.bullet-row .textarea-expand-wrap.is-input-wrap .textarea-expand-pill {
+  top: 50%;
+  transform: translateY(-50%) scale(0.92);
+}
+
 .bullet-row:hover .textarea-expand-pill {
   opacity: 0.85;
 }
@@ -1128,36 +1133,64 @@ button.remove:hover {
   width: 100%;
 }
 
-.textarea-expand-pill {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-  background: rgba(10, 14, 20, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 4px 10px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  opacity: 0.7;
-  z-index: 2;
+.textarea-expand-wrap textarea {
+  padding-right: 4.8rem !important;
 }
 
-.textarea-expand-wrap:hover .textarea-expand-pill {
-  opacity: 1;
+.textarea-expand-wrap input {
+  padding-right: 4.6rem !important;
+}
+
+.textarea-expand-pill {
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: rgba(8, 11, 16, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.92);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+  z-index: 3;
+}
+
+.textarea-expand-wrap.is-input-wrap .textarea-expand-pill {
+  top: 50%;
+  transform: translateY(-50%) scale(0.92);
+}
+
+.textarea-expand-wrap:hover .textarea-expand-pill,
+.textarea-expand-wrap:focus-within .textarea-expand-pill {
+  opacity: 0.85;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.textarea-expand-wrap.is-input-wrap:hover .textarea-expand-pill,
+.textarea-expand-wrap.is-input-wrap:focus-within .textarea-expand-pill {
+  opacity: 0.85;
+  pointer-events: auto;
+  transform: translateY(-50%) scale(1);
+}
+
+.textarea-expand-pill:hover {
+  opacity: 1 !important;
   color: var(--bone);
-  border-color: rgba(224, 35, 28, 0.5);
-  box-shadow: 0 0 12px rgba(224, 35, 28, 0.25);
-  transform: translateY(-1px);
+  border-color: rgba(224, 35, 28, 0.6);
+  box-shadow: 0 0 10px rgba(224, 35, 28, 0.35);
 }
 
 .expanded-editor-backdrop {

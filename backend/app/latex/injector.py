@@ -11,6 +11,7 @@ from typing import Any, Optional
 from jinja2 import Environment, FileSystemLoader
 
 from app.latex.escape import escape_latex
+from app.llm.base import clean_bullet_text
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 
@@ -44,9 +45,17 @@ def _resolve_bullets(
     if selected_bullets is not None:
         key = f"{entry_kind}:{entry.get('id')}"
         if key in selected_bullets:
-            return [escape_latex(text) for text in selected_bullets[key]]
+            return [
+                escape_latex(clean_bullet_text(text))
+                for text in selected_bullets[key]
+                if clean_bullet_text(text)
+            ]
 
-    return [escape_latex(_bullet_text(b)) for b in entry.get("bullets", [])]
+    return [
+        escape_latex(clean_bullet_text(_bullet_text(b)))
+        for b in entry.get("bullets", [])
+        if _bullet_text(b) and clean_bullet_text(_bullet_text(b))
+    ]
 
 
 def _experience_label(experience: list[dict]) -> str:
@@ -82,22 +91,32 @@ def _build_context(
         "summary": escape_latex(profile.get("summary", "")),
     }
 
+    is_tailored = selected_bullets is not None
+
     experience = profile.get("experience") or []
     ctx["experience_label"] = _experience_label(experience)
-    ctx["experience"] = [
-        {
-            "role": escape_latex(exp.get("role", "")),
-            "org": escape_latex(exp.get("org", "")),
-            "location": escape_latex(exp.get("location", "")),
-            "dates": escape_latex(exp.get("dates", "")),
-            "bullets": _resolve_bullets(exp, "experience", selected_bullets),
-        }
-        for exp in experience
-    ]
+    rendered_experience = []
+    for exp in experience:
+        bullets = _resolve_bullets(exp, "experience", selected_bullets)
+        if is_tailored and not bullets:
+            continue
+        rendered_experience.append(
+            {
+                "role": escape_latex(exp.get("role", "")),
+                "org": escape_latex(exp.get("org", "")),
+                "location": escape_latex(exp.get("location", "")),
+                "dates": escape_latex(exp.get("dates", "")),
+                "bullets": bullets,
+            }
+        )
+    ctx["experience"] = rendered_experience
 
     projects = profile.get("projects") or []
     rendered_projects = []
     for proj in projects:
+        bullets = _resolve_bullets(proj, "project", selected_bullets)
+        if is_tailored and not bullets:
+            continue
         tech_list = [escape_latex(t) for t in proj.get("tech", [])]
         rendered_projects.append(
             {
@@ -105,7 +124,7 @@ def _build_context(
                 "tech_joined": ", ".join(tech_list),
                 "date": escape_latex(proj.get("date", "")),
                 "link": escape_latex(proj.get("link", "")) if proj.get("link") else "",
-                "bullets": _resolve_bullets(proj, "project", selected_bullets),
+                "bullets": bullets,
             }
         )
     ctx["projects"] = rendered_projects

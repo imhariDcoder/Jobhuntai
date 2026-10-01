@@ -10,7 +10,7 @@ bullets and phrasing go in, then hands off to the same
 
 from dataclasses import dataclass, field
 
-from app.llm.base import Bullet, LLMProvider
+from app.llm.base import Bullet, LLMProvider, clean_bullet_text
 
 
 @dataclass
@@ -123,14 +123,15 @@ def tailor_profile(profile: dict, jd_text: str, provider: LLMProvider) -> Tailor
 
     for selection in selections:
         info = bullet_info[selection.bullet_id]
-        selected_bullets[f"{info['kind']}:{info['entry_id']}"].append(selection.rewritten_text)
+        cleaned_text = clean_bullet_text(selection.rewritten_text)
+        selected_bullets[f"{info['kind']}:{info['entry_id']}"].append(cleaned_text)
         diffs.append(
             BulletDiff(
                 bullet_id=selection.bullet_id,
                 entry_kind=info["kind"],
                 entry_label=info["entry_label"],
                 original_text=info["original_text"],
-                rewritten_text=selection.rewritten_text,
+                rewritten_text=cleaned_text,
             )
         )
 

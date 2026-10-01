@@ -87,3 +87,18 @@ def test_project_tech_stack_line_omitted_when_no_tech():
     profile["projects"][0]["tech"] = []
     tex = render_resume_tex(profile)
     assert r"\textcolor{accent}{\emph{" not in tex
+
+
+def test_tailored_empty_bullets_entry_is_omitted_without_orphan_heading():
+    # When tailoring, if an entry has 0 selected bullets, its heading should be
+    # omitted rather than rendered as an orphan heading with blank space.
+    override = {
+        "experience:exp-1": ["Only exp-1 bullet."],
+        "experience:exp-2": [],
+        "project:proj-1": [],
+    }
+    tex = render_resume_tex(DUMMY_PROFILE, selected_bullets=override)
+    assert "Only exp-1 bullet." in tex
+    assert "Data Analytics Career Track" not in tex
+    assert "Retail Sales Forecasting" not in tex
+

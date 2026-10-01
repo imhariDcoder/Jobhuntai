@@ -60,3 +60,42 @@ def validate_selected_bullets(
             f"response referenced unknown bullet_id(s): {unknown}"
         )
     return selections
+
+
+import re
+
+SHARED_SELECT_AND_REWRITE_SYSTEM_PROMPT = (
+    "You are a professional resume tailoring assistant. You are given the candidate's "
+    "real, existing resume bullets (each with a bullet_id) and keywords extracted from a target job description.\n\n"
+    "Your instructions:\n"
+    "1. Selection & Distribution:\n"
+    "   - Select bullets that best match the job description requirements and domain.\n"
+    "   - For each relevant role or project, select 1 to 3 bullets so the resume remains balanced and complete.\n"
+    "   - If an entire project or role has zero relevance to the target job, do not select any bullets for it.\n"
+    "2. Rewording Rules:\n"
+    "   - Rewrite each selected bullet to naturally incorporate the job description's terminology and keywords.\n"
+    "   - Strictly preserve all real metrics, numbers, technologies, and outcomes from the original bullet. NEVER fabricate facts, tools, or metrics.\n"
+    "   - Ban AI buzzwords: do NOT use words like 'leveraged', 'spearheaded', 'orchestrated', 'utilized', 'synergy', 'cutting-edge', 'streamlined', 'robust', 'seamless', 'dynamic'.\n"
+    "3. Formatting Consistency (CRITICAL):\n"
+    "   - Output pure plain text ONLY. Do NOT use Markdown formatting (NO bold **...**, NO italics *...*, NO backticks).\n"
+    "   - Do NOT include bullet characters, dashes, or numbering at the start of bullets (NO '•', '-', '*').\n"
+    "   - Start each bullet with a strong action verb.\n"
+    "   - End every bullet with a period '.' consistently.\n\n"
+    "4. Constraints:\n"
+    "   - Every bullet_id you return MUST be one of the exact bullet_id values you were given. Never invent a bullet_id."
+)
+
+
+def clean_bullet_text(text: str) -> str:
+    """Normalize bullet text to remove markdown, bullet glyphs, and extra whitespace."""
+    if not text:
+        return ""
+    cleaned = text.strip()
+    # Strip leading bullet/dash markers like •, -, —, or * followed by space
+    cleaned = re.sub(r"^\s*([•\-–—]|\*(?=\s))\s*", "", cleaned)
+    # Strip markdown bold asterisks
+    cleaned = re.sub(r"\*\*([^*]+)\*\*", r"\1", cleaned)
+    # Strip markdown italic asterisks
+    cleaned = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"\1", cleaned)
+    return cleaned.strip()
+

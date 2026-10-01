@@ -18,6 +18,8 @@ from app.llm.base import (
     LLMProvider,
     LLMProviderError,
     SelectedBullet,
+    SHARED_SELECT_AND_REWRITE_SYSTEM_PROMPT,
+    clean_bullet_text,
     validate_selected_bullets,
 )
 
@@ -49,20 +51,6 @@ _SELECTIONS_SCHEMA = {
     "required": ["selections"],
     "additionalProperties": False,
 }
-
-_SELECT_AND_REWRITE_SYSTEM_PROMPT = (
-    "You help tailor a resume to a job description. You are given the "
-    "candidate's real, existing resume bullets (each with a bullet_id) "
-    "and a list of keywords extracted from the job description.\n\n"
-    "Select only the bullets that are a good fit for this job -- not "
-    "necessarily all of them. For each selected bullet, rewrite its text "
-    "to mirror the job description's language and terminology, but do "
-    "NOT invent new facts, numbers, tools, or claims that are not already "
-    "present in the original bullet text. This is a rewording of "
-    "existing content, not new content.\n\n"
-    "Every bullet_id you return MUST be one of the bullet_id values you "
-    "were given -- never invent a bullet_id."
-)
 
 
 class GeminiProvider(LLMProvider):
@@ -113,12 +101,15 @@ class GeminiProvider(LLMProvider):
             {"bullet_id": b.id, "text": b.text, "keywords": b.keywords} for b in bullets
         ]
         data = self._generate_json(
-            system_instruction=_SELECT_AND_REWRITE_SYSTEM_PROMPT,
+            system_instruction=SHARED_SELECT_AND_REWRITE_SYSTEM_PROMPT,
             contents=json.dumps({"bullets": bullets_payload, "job_keywords": jd_keywords}),
             schema=_SELECTIONS_SCHEMA,
         )
         selections = [
-            SelectedBullet(bullet_id=s["bullet_id"], rewritten_text=s["rewritten_text"])
+            SelectedBullet(
+                bullet_id=s["bullet_id"],
+                rewritten_text=clean_bullet_text(s["rewritten_text"]),
+            )
             for s in data["selections"]
         ]
         return validate_selected_bullets(bullets, selections)

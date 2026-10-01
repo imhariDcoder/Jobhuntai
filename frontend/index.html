@@ -2,71 +2,106 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SmartJobAI -- Profile</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartJobAI — Master Profile</title>
+  <link rel="stylesheet" href="/static/style.css?v=1.0.4" />
 </head>
 <body>
-  <div class="topbar">
+  <header class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="/">
-        <span class="brand-mark">SJ</span>
-        SmartJobAI
+        <svg class="brand-symbol" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="3" fill="#0d1218" stroke="rgba(223,231,224,0.14)"/>
+          <circle cx="16" cy="16" r="6" fill="#e0231c"/>
+          <rect x="7" y="9" width="18" height="1.8" fill="#dfe7e0" opacity="0.85"/>
+          <rect x="10" y="13" width="12" height="1.5" fill="#dfe7e0" opacity="0.6"/>
+        </svg>
+        <span class="brand-text">
+          <b>SmartJob</b>
+          <i>AI · LaTeX Engine</i>
+        </span>
       </a>
       <nav class="tabs">
-        <a href="/" class="active">Profile</a>
+        <a href="/" class="active">Master Profile</a>
         <a href="/jd">Tailor to a Job</a>
       </nav>
     </div>
-  </div>
+  </header>
 
-  <div class="page">
-    <h1>Your Profile</h1>
-    <p class="lede">
-      Fill this out once, then keep it current. <strong>Save Profile</strong>
-      persists your changes so they're ready the next time you tailor a
-      resume to a job description. <strong>Save &amp; Preview PDF</strong>
-      does the same save, plus renders a PDF you can review before
-      downloading.
-    </p>
+  <main class="page">
+    <div class="hero">
+      <div class="eyebrow">
+        <span class="dot"></span>
+        Master Profile Archive · Chapter I
+      </div>
+      <h1>Your Master Career Profile</h1>
+      <p class="lede">
+        Store your complete career history, achievements, and technical competencies here. SmartJobAI uses this master profile to compile ATS-ready, single-page LaTeX resumes tailored to specific opportunities.
+      </p>
+    </div>
 
     <form id="profile-form">
-      <h2>Header</h2>
+      <div class="section-header">
+        <span class="section-eyebrow"><b>01</b> / Identity</span>
+        <h2>Contact &amp; Header</h2>
+        <span class="rule"></span>
+      </div>
       <div class="card">
         <div class="row-2">
-          <div><label>Name</label><input type="text" id="field-name" /></div>
-          <div><label>Phone</label><input type="text" id="field-phone" /></div>
+          <div><label for="field-name">Full Name</label><input type="text" id="field-name" placeholder="e.g. Jane Doe" /></div>
+          <div><label for="field-phone">Phone Number</label><input type="text" id="field-phone" placeholder="e.g. +1 (555) 000-0000" /></div>
         </div>
         <div class="row-2">
-          <div><label>Email</label><input type="text" id="field-email" /></div>
-          <div><label>Location</label><input type="text" id="field-location" /></div>
+          <div><label for="field-email">Email Address</label><input type="email" id="field-email" placeholder="e.g. jane@example.com" /></div>
+          <div><label for="field-location">Location</label><input type="text" id="field-location" placeholder="e.g. New York, NY" /></div>
         </div>
         <div class="row-2">
-          <div><label>LinkedIn</label><input type="text" id="field-linkedin" /></div>
-          <div><label>GitHub</label><input type="text" id="field-github" /></div>
+          <div><label for="field-linkedin">LinkedIn Profile URL</label><input type="text" id="field-linkedin" placeholder="e.g. linkedin.com/in/janedoe" /></div>
+          <div><label for="field-github">GitHub Profile URL</label><input type="text" id="field-github" placeholder="e.g. github.com/janedoe" /></div>
         </div>
-        <label>Professional Summary</label>
-        <textarea id="field-summary"></textarea>
+        <label for="field-summary">Executive Summary</label>
+        <textarea id="field-summary" rows="3" placeholder="Brief professional overview highlighting your core strengths and expertise..."></textarea>
       </div>
 
-      <h2>Education</h2>
+      <div class="section-header">
+        <span class="section-eyebrow"><b>02</b> / Background</span>
+        <h2>Education</h2>
+        <span class="rule"></span>
+      </div>
       <div id="education-list"></div>
-      <button type="button" class="add" id="add-education">+ Add education</button>
+      <button type="button" class="add" id="add-education">+ Add Education Entry</button>
 
-      <h2>Experience &amp; Training</h2>
+      <div class="section-header">
+        <span class="section-eyebrow"><b>03</b> / Track Record</span>
+        <h2>Experience &amp; Training</h2>
+        <span class="rule"></span>
+      </div>
       <div id="experience-list"></div>
-      <button type="button" class="add" id="add-experience">+ Add experience / training entry</button>
+      <button type="button" class="add" id="add-experience">+ Add Experience / Training Entry</button>
 
-      <h2>Projects</h2>
+      <div class="section-header">
+        <span class="section-eyebrow"><b>04</b> / Portfolio</span>
+        <h2>Projects</h2>
+        <span class="rule"></span>
+      </div>
       <div id="projects-list"></div>
-      <button type="button" class="add" id="add-project">+ Add project</button>
+      <button type="button" class="add" id="add-project">+ Add Project Entry</button>
 
-      <h2>Skills</h2>
+      <div class="section-header">
+        <span class="section-eyebrow"><b>05</b> / Arsenal</span>
+        <h2>Skills</h2>
+        <span class="rule"></span>
+      </div>
       <div id="skills-list"></div>
-      <button type="button" class="add" id="add-skill">+ Add skill category</button>
+      <button type="button" class="add" id="add-skill">+ Add Skill Category</button>
 
-      <h2>Certifications</h2>
+      <div class="section-header">
+        <span class="section-eyebrow"><b>06</b> / Credentials</span>
+        <h2>Certifications</h2>
+        <span class="rule"></span>
+      </div>
       <div id="certifications-list"></div>
-      <button type="button" class="add" id="add-certification">+ Add certification</button>
+      <button type="button" class="add" id="add-certification">+ Add Certification</button>
 
       <div class="action-bar">
         <button type="button" class="secondary" id="save-profile">Save Profile</button>
@@ -74,22 +109,24 @@
         <div id="status"></div>
       </div>
     </form>
-  </div>
+  </main>
 
   <div class="modal-overlay" id="pdf-modal-overlay" style="display: none;">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>Resume Preview</h3>
-        <button type="button" class="modal-close" id="pdf-modal-close">&times;</button>
+        <h3>Master Resume PDF Preview</h3>
+        <button type="button" class="modal-close" id="pdf-modal-close" title="Close Preview">&times;</button>
       </div>
       <div class="modal-body"><iframe id="pdf-modal-iframe"></iframe></div>
       <div class="modal-footer">
+        <button type="button" class="secondary" onclick="closePdfPreview()">Close</button>
         <button type="button" class="primary" id="pdf-modal-download">Download PDF</button>
       </div>
     </div>
   </div>
 
-  <script src="/static/ui.js"></script>
+  <script src="/static/mountain-canvas.js"></script>
+  <script src="/static/ui.js?v=1.0.4"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>

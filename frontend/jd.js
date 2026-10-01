@@ -212,6 +212,41 @@ document.addEventListener("DOMContentLoaded", () => {
     sessionStorage.setItem(apiKeyStorageKey(providerSelect.value), e.target.value);
   });
 
+  const toggleBtn = document.getElementById("toggle-api-key");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const isPassword = apiKeyInput.type === "password";
+      apiKeyInput.type = isPassword ? "text" : "password";
+      toggleBtn.innerHTML = isPassword
+        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    });
+  }
+
+  const sampleJdBtn = document.getElementById("load-sample-jd");
+  if (sampleJdBtn) {
+    sampleJdBtn.addEventListener("click", () => {
+      const sampleText = `Role: Senior Data Analyst / Business Intelligence Specialist\n\n` +
+        `About the Role:\n` +
+        `We are looking for a Data Analyst to join our Analytics team. You will lead exploratory data analysis (EDA), engineer SQL queries, build executive BI dashboards, and uncover data-driven insights that directly influence company strategy.\n\n` +
+        `Key Responsibilities:\n` +
+        `• Perform exploratory data analysis (EDA) on high-volume transactional and customer behavior datasets.\n` +
+        `• Design, build, and maintain interactive dashboards in Power BI and Tableau for senior leadership.\n` +
+        `• Write complex SQL queries for data extraction, manipulation, and performance optimization.\n` +
+        `• Partner with cross-functional stakeholders to define, monitor, and optimize core business KPIs.\n` +
+        `• Implement data validation checks and automated ETL workflows using Python.\n\n` +
+        `Required Qualifications:\n` +
+        `• Bachelor's degree in Computer Science, Data Science, Statistics, or related technical field.\n` +
+        `• 1-3+ years of hands-on data analytics and business intelligence reporting experience.\n` +
+        `• Proficiency in Python (pandas, numpy), SQL, and Excel.\n` +
+        `• Demonstrated expertise in Power BI and Tableau (DAX, Power Query, drill-through reports).\n` +
+        `• Strong analytical mindset with experience translating raw data into actionable recommendations.`;
+      const jdField = document.getElementById("field-jd");
+      jdField.value = sampleText;
+      jdField.focus();
+    });
+  }
+
   document.getElementById("add-keywords-btn").addEventListener("click", addSelectedKeywordsToSkills);
 
   document.getElementById("jd-form").addEventListener("submit", async (e) => {

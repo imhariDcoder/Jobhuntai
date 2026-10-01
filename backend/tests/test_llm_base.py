@@ -37,3 +37,15 @@ def test_one_unknown_id_among_valid_ones_still_rejects_whole_response():
 def test_empty_selection_list_is_valid():
     bullets = [Bullet(id="b1", text="did a thing", keywords=["x"])]
     assert validate_selected_bullets(bullets, []) == []
+
+
+from app.llm.base import clean_bullet_text
+
+
+def test_clean_bullet_text_strips_leading_glyphs_and_markdown():
+    assert clean_bullet_text("• Built an automated pipeline") == "Built an automated pipeline"
+    assert clean_bullet_text("- **Engineered** data warehouse using SQL") == "Engineered data warehouse using SQL"
+    assert clean_bullet_text("* Optimized *ETL* queries by 40%") == "Optimized ETL queries by 40%"
+    assert clean_bullet_text("") == ""
+    assert clean_bullet_text("   ") == ""
+

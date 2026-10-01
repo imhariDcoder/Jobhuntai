@@ -14,9 +14,9 @@
 \usepackage{fancyhdr}
 \usepackage[english]{babel}
 \usepackage{tabularx}
-\usepackage{geometry}
 \usepackage{xcolor}
 \usepackage{fontawesome5}
+\usepackage{geometry}
 
 \geometry{top=0.45in, bottom=0.45in, left=0.55in, right=0.55in}
 
@@ -27,11 +27,7 @@
 \renewcommand{\footrulewidth}{0pt}
 
 \urlstyle{same}
-% flushbottom (not raggedbottom) so LaTeX distributes any leftover
-% vertical space evenly across the page instead of dumping it all as
-% blank space at the bottom -- matters most for shorter resumes/tailored
-% subsets with fewer bullets than the full profile.
-\flushbottom
+\raggedbottom
 \raggedright
 \setlength{\tabcolsep}{0in}
 
@@ -103,13 +99,6 @@
 \noindent\textcolor{rulecolor}{\rule{\textwidth}{1pt}}
 \vspace{-4pt}
 
-% \vfill between sections (not after the last one) so leftover vertical
-% space on a shorter resume/tailored subset stretches evenly across the
-% gaps between sections, instead of collecting as one dead zone at the
-% bottom of the page. Contributes nothing when content already fills the
-% page, so this is safe for full-length resumes too.
-\vfill
-
 ((* if summary *))
 %-------------------------
 % PROFESSIONAL SUMMARY
@@ -117,7 +106,6 @@
 \section{Professional Summary}
 \small{(( summary ))}
 ((* endif *))
-\vfill
 
 ((* if experience *))
 %-------------------------
@@ -135,11 +123,12 @@
         \resumeItem{(( bullet ))}
         ((* endfor *))
       \resumeItemListEnd
+      ((* else *))
+      \vspace{6pt}
       ((* endif *))
   ((* endfor *))
   \resumeSubHeadingListEnd
 ((* endif *))
-\vfill
 
 ((* if projects *))
 %-------------------------
@@ -156,11 +145,12 @@
           \resumeItem{(( bullet ))}
           ((* endfor *))
         \resumeItemListEnd
+        ((* else *))
+        \vspace{6pt}
         ((* endif *))
     ((* endfor *))
     \resumeSubHeadingListEnd
 ((* endif *))
-\vfill
 
 ((* if skills *))
 %-------------------------
@@ -174,7 +164,6 @@
 \end{itemize}
 \vspace{-14pt}
 ((* endif *))
-\vfill
 
 ((* if certifications *))
 %-------------------------
@@ -188,7 +177,6 @@
     ((* endfor *))
   \resumeSubHeadingListEnd
 ((* endif *))
-\vfill
 
 ((* if education *))
 %-------------------------
@@ -206,6 +194,8 @@
         \resumeItem{(( detail ))}
         ((* endfor *))
       \resumeItemListEnd
+      ((* else *))
+      \vspace{6pt}
       ((* endif *))
   ((* endfor *))
   \resumeSubHeadingListEnd

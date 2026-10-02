@@ -1366,3 +1366,191 @@ button.remove:hover {
   animation: syncedPulseGlow 1s ease-out;
 }
 
+/* ============================================================= Tailored Skills Management */
+.skills-management-card {
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-top: 1px solid rgba(224, 35, 28, 0.4);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.skills-mgmt-desc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 12.5px;
+  color: var(--bone-dim);
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.skills-mgmt-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+button.tiny {
+  font-size: 9.5px;
+  padding: 5px 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.tailored-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.tailored-cat-box {
+  background: rgba(5, 7, 10, 0.6);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.tailored-cat-box:hover {
+  border-color: rgba(223, 231, 224, 0.2);
+}
+
+.tailored-cat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.tailored-cat-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--vermilion);
+}
+
+.tailored-cat-count {
+  font-size: 9.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tailored-cat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-height: 28px;
+}
+
+.tailored-skill-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(18, 24, 32, 0.85);
+  border: 1px solid rgba(223, 231, 224, 0.14);
+  color: var(--bone);
+  font-size: 11px;
+  padding: 0.25rem 0.6rem 0.25rem 0.75rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.tailored-skill-pill:hover {
+  border-color: rgba(223, 231, 224, 0.3);
+  background: rgba(25, 33, 44, 0.95);
+}
+
+.tailored-skill-pill .skill-del-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.tailored-skill-pill .skill-del-btn:hover {
+  color: #ff554f;
+  transform: scale(1.2);
+}
+
+.tailored-cat-empty {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 0.25rem 0;
+}
+
+.add-skill-bar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.add-skill-bar input {
+  flex: 2;
+  min-width: 180px;
+}
+
+.add-skill-bar select {
+  flex: 1.2;
+  min-width: 150px;
+}
+
+.sync-status-msg {
+  font-size: 11.5px;
+  margin-top: 0.6rem;
+  transition: all 0.2s ease;
+}
+
+/* ============================================================= Honesty Advisory Card */
+.honesty-card {
+  background: rgba(10, 14, 20, 0.85);
+  border: 1px solid rgba(255, 180, 50, 0.25);
+  border-left: 3px solid #f59e0b;
+  border-radius: var(--radius-sm);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+.honesty-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fbbf24;
+  margin-bottom: 0.75rem;
+}
+
+.honesty-header svg {
+  stroke: #f59e0b;
+  flex-shrink: 0;
+}
+
+.honesty-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--bone);
+  margin: 0;
+}
+
+

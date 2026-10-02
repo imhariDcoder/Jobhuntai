@@ -54,6 +54,8 @@ def test_preview_endpoint_returns_review_data(provider_name):
         assert len(body["diffs"]) == 1
         assert body["diffs"][0]["rewritten_text"] == "Reworded to mirror the JD."
         assert "selected_bullets" in body
+        assert "honesty_note" in body
+        assert "profile_skills" in body
 
 
 def test_preview_endpoint_rejects_unknown_provider():
@@ -113,3 +115,21 @@ def test_download_endpoint_renders_pdf_from_given_selection_without_llm_call():
         assert resp.status_code == 200
         assert resp.headers["content-type"] == "application/pdf"
         assert resp.content[:5] == b"%PDF-"
+
+
+def test_download_endpoint_accepts_tailored_skills():
+    with TestClient(app) as client:
+        client.put("/api/profile", json=DUMMY_PROFILE)
+
+        resp = client.post(
+            "/api/resume/tailor/download",
+            json={
+                "selected_bullets": {"experience:exp-1": ["A single reworded bullet."]},
+                "tailored_skills": [{"category": "Tailored Category", "items": ["Special Skill"]}],
+            },
+        )
+
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == "application/pdf"
+        assert resp.content[:5] == b"%PDF-"
+

@@ -12,6 +12,7 @@ from anthropic import Anthropic, AnthropicError
 
 from app.llm.base import (
     Bullet,
+    EXTRACT_KEYWORDS_SYSTEM_PROMPT,
     LLMProvider,
     LLMProviderError,
     SelectedBullet,
@@ -79,12 +80,7 @@ class AnthropicProvider(LLMProvider):
 
     def extract_keywords(self, jd_text: str) -> list[str]:
         data = self._create_json(
-            system=(
-                "You extract ATS-relevant keywords (skills, tools, role "
-                "titles, domain terms) from a job description. Return only "
-                "terms that actually appear in or are clearly implied by "
-                "the text."
-            ),
+            system=EXTRACT_KEYWORDS_SYSTEM_PROMPT,
             user_content=jd_text,
             schema=_KEYWORDS_SCHEMA,
         )
@@ -101,6 +97,7 @@ class AnthropicProvider(LLMProvider):
             user_content=json.dumps({"bullets": bullets_payload, "job_keywords": jd_keywords}),
             schema=_SELECTIONS_SCHEMA,
         )
+        self.last_honesty_note = data.get("honesty_note", "")
         selections = [
             SelectedBullet(
                 bullet_id=s["bullet_id"],

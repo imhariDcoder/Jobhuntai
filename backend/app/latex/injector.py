@@ -76,7 +76,9 @@ def _url_with_scheme(url: str) -> str:
 
 
 def _build_context(
-    profile: dict, selected_bullets: Optional[dict[str, list[str]]] = None
+    profile: dict,
+    selected_bullets: Optional[dict[str, list[str]]] = None,
+    tailored_skills: Optional[list[dict]] = None,
 ) -> dict:
     ctx: dict[str, Any] = {
         "name": escape_latex(profile.get("name", "")),
@@ -129,16 +131,20 @@ def _build_context(
         )
     ctx["projects"] = rendered_projects
 
-    skills = profile.get("skills") or []
+    skills = tailored_skills if tailored_skills is not None else (profile.get("skills") or [])
+    filtered_skills = [
+        s for s in skills
+        if s.get("items") and any(str(item).strip() for item in s["items"])
+    ]
     skill_lines = [
         r"\textbf{\textcolor{accent}{%s:}} %s"
         % (
             escape_latex(s.get("category", "")),
-            ", ".join(escape_latex(item) for item in s.get("items", [])),
+            ", ".join(escape_latex(str(item).strip()) for item in s.get("items", []) if str(item).strip()),
         )
-        for s in skills
+        for s in filtered_skills
     ]
-    ctx["skills"] = skills
+    ctx["skills"] = filtered_skills
     ctx["skills_block"] = " \\\\[3pt]\n    ".join(skill_lines)
 
     certifications = profile.get("certifications") or []
@@ -167,7 +173,9 @@ def _build_context(
 
 
 def render_resume_tex(
-    profile: dict, selected_bullets: Optional[dict[str, list[str]]] = None
+    profile: dict,
+    selected_bullets: Optional[dict[str, list[str]]] = None,
+    tailored_skills: Optional[list[dict]] = None,
 ) -> str:
     """Render a complete .tex document from a structured profile dict.
 
@@ -175,7 +183,10 @@ def render_resume_tex(
     to the list of bullet strings to render for that entry -- this is how
     Mode 2 injects the LLM-selected/reworded subset without changing how
     the .tex itself gets built.
+
+    `tailored_skills`, when given, overrides the skills list for the rendered
+    document, allowing job-specific skill inclusion and exclusions.
     """
     template = _env.get_template("resume.tex.j2")
-    context = _build_context(profile, selected_bullets)
+    context = _build_context(profile, selected_bullets, tailored_skills=tailored_skills)
     return template.render(**context)

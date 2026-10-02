@@ -12,6 +12,7 @@ from openai import OpenAI, OpenAIError
 
 from app.llm.base import (
     Bullet,
+    EXTRACT_KEYWORDS_SYSTEM_PROMPT,
     LLMProvider,
     LLMProviderError,
     SelectedBullet,
@@ -78,12 +79,7 @@ class OpenAIProvider(LLMProvider):
             messages=[
                 {
                     "role": "system",
-                    "content": (
-                        "You extract ATS-relevant keywords (skills, tools, "
-                        "role titles, domain terms) from a job description. "
-                        "Return only terms that actually appear in or are "
-                        "clearly implied by the text."
-                    ),
+                    "content": EXTRACT_KEYWORDS_SYSTEM_PROMPT,
                 },
                 {"role": "user", "content": jd_text},
             ],
@@ -116,6 +112,7 @@ class OpenAIProvider(LLMProvider):
             response_format={"type": "json_schema", "json_schema": _SELECTIONS_SCHEMA},
         )
         data = json.loads(response.choices[0].message.content)
+        self.last_honesty_note = data.get("honesty_note", "")
         selections = [
             SelectedBullet(
                 bullet_id=s["bullet_id"],

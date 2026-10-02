@@ -102,3 +102,17 @@ def test_tailored_empty_bullets_entry_is_omitted_without_orphan_heading():
     assert "Data Analytics Career Track" not in tex
     assert "Retail Sales Forecasting" not in tex
 
+
+def test_tailored_skills_override_renders_custom_skills():
+    tailored_skills = [
+        {"category": "Data & BI", "items": ["Power BI", "Tableau", "SQL"]},
+        {"category": "Omitted Category", "items": []},
+    ]
+    tex = render_resume_tex(DUMMY_PROFILE, tailored_skills=tailored_skills)
+    assert r"Data \& BI" in tex
+    assert "Power BI, Tableau, SQL" in tex
+    # Old languages category from DUMMY_PROFILE should not be present
+    assert "Languages & Tools" not in tex
+    assert "Omitted Category" not in tex
+
+

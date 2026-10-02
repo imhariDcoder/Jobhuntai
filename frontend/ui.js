@@ -148,7 +148,7 @@ function createExpandedEditorDom() {
 
   // Sync edits back live to target element
   _editorTextarea.addEventListener("input", () => {
-    if (_activeTargetElement) {
+    if (_activeTargetElement && _activeTargetElement !== _editorTextarea) {
       _activeTargetElement.value = _editorTextarea.value;
       _activeTargetElement.dispatchEvent(new Event("input", { bubbles: true }));
       _activeTargetElement.dispatchEvent(new Event("change", { bubbles: true }));
@@ -166,8 +166,9 @@ function createExpandedEditorDom() {
   if (inlineBtn) {
     inlineBtn.addEventListener("click", () => {
       _suppressAutoOpenUntil = Date.now() + 60000; // 1 min inline typing mode
+      const elToFocus = _activeTargetElement;
       closeExpandedEditor();
-      if (_activeTargetElement) _activeTargetElement.focus();
+      if (elToFocus) elToFocus.focus();
     });
   }
 
@@ -190,6 +191,9 @@ function updateEditorStats(text) {
 }
 
 function openExpandedEditor(targetElement, titleText) {
+  if (!targetElement) return;
+  if (targetElement.id === "expanded-editor-input" || targetElement.closest(".expanded-editor-backdrop")) return;
+
   createExpandedEditorDom();
   _activeTargetElement = targetElement;
 
@@ -219,12 +223,31 @@ function openExpandedEditor(targetElement, titleText) {
 
 function closeExpandedEditor() {
   if (!_editorBackdrop) return;
+
+  // Guaranteed final sync before closing
+  if (_activeTargetElement && _activeTargetElement !== _editorTextarea && _editorTextarea) {
+    _activeTargetElement.value = _editorTextarea.value;
+    _activeTargetElement.dispatchEvent(new Event("input", { bubbles: true }));
+    _activeTargetElement.dispatchEvent(new Event("change", { bubbles: true }));
+    if (typeof _activeTargetElement.oninput === "function") {
+      try {
+        _activeTargetElement.oninput({ target: _activeTargetElement });
+      } catch (_) {}
+    }
+    if (typeof _activeTargetElement.onchange === "function") {
+      try {
+        _activeTargetElement.onchange({ target: _activeTargetElement });
+      } catch (_) {}
+    }
+  }
+
   _editorBackdrop.classList.remove("is-active");
 
   if (_activeTargetElement) {
     const el = _activeTargetElement;
     el.classList.add("editor-synced-pulse");
     setTimeout(() => el.classList.remove("editor-synced-pulse"), 1000);
+    _activeTargetElement = null;
   }
 }
 
@@ -272,13 +295,15 @@ function findLabelForElement(el) {
 
 function attachExpandableToElement(el) {
   if (el.dataset.hasExpandableAttached) return;
+  // Ignore the expanded editor itself and any inputs inside the modal panel
+  if (el.id === "expanded-editor-input" || el.classList.contains("expanded-editor-textarea") || el.closest(".expanded-editor-backdrop") || el.closest(".expanded-editor-panel")) return;
   // Ignore buttons, radios, checkboxes, file inputs, hidden inputs
   if (el.type === "button" || el.type === "submit" || el.type === "checkbox" || el.type === "radio" || el.type === "hidden") return;
 
   el.dataset.hasExpandableAttached = "true";
 
   // Wrap in container with expand pill if not already wrapped
-  if (!el.parentElement.classList.contains("textarea-expand-wrap")) {
+  if (el.parentElement && !el.parentElement.classList.contains("textarea-expand-wrap")) {
     const wrapper = document.createElement("div");
     wrapper.className = "textarea-expand-wrap" + (el.tagName === "INPUT" ? " is-input-wrap" : "");
     el.parentNode.insertBefore(wrapper, el);
@@ -308,6 +333,7 @@ function attachExpandableToElement(el) {
 
   // Click on text box triggers fluid expand
   el.addEventListener("click", (e) => {
+    if (el.closest(".expanded-editor-backdrop")) return;
     if (Date.now() < _suppressAutoOpenUntil) return;
     if (el.tagName === "TEXTAREA" || isAutoExpandAllEnabled()) {
       openExpandedEditor(el, findLabelForElement(el));
@@ -316,15 +342,20 @@ function attachExpandableToElement(el) {
 
   // Double click always opens
   el.addEventListener("dblclick", () => {
+    if (el.closest(".expanded-editor-backdrop")) return;
     openExpandedEditor(el, findLabelForElement(el));
   });
 }
 
 function scanAndAttachExpandables() {
   createExpandedEditorDom();
-  // Target all textareas and text/email/search inputs across static and dynamic sections
-  const targets = document.querySelectorAll("textarea, input[type='text'], input[type='email'], input:not([type])");
-  targets.forEach(attachExpandableToElement);
+  // Target all textareas and text/email/search inputs across static and dynamic sections (excluding expanded editor itself)
+  const targets = document.querySelectorAll("textarea:not(#expanded-editor-input):not(.expanded-editor-textarea), input[type='text'], input[type='email'], input:not([type])");
+  targets.forEach((el) => {
+    if (!el.closest(".expanded-editor-backdrop")) {
+      attachExpandableToElement(el);
+    }
+  });
 }
 
 function initExpandableTextareas() {

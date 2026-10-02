@@ -130,7 +130,50 @@
       </div>
 
       <div class="section-header">
-        <span class="section-eyebrow"><b>02</b> / Diff</span>
+        <span class="section-eyebrow"><b>02</b> / Skills</span>
+        <h2>Active Skills for this Tailored CV</h2>
+        <span class="rule"></span>
+      </div>
+
+      <div class="card skills-management-card">
+        <div class="skills-mgmt-desc">
+          <span>Manage which skills are included in this specific job's resume. Click <strong>&times;</strong> to remove skills that aren't needed for this role, or add new technical skills below.</span>
+          <div class="skills-mgmt-actions">
+            <button type="button" class="secondary tiny" id="reset-skills-btn" title="Reset back to master profile skills">Reset to Profile</button>
+            <button type="button" class="secondary tiny" id="save-master-skills-btn" title="Save current tailored skills back to master profile">Save to Profile</button>
+          </div>
+        </div>
+
+        <div id="tailored-skills-list" class="tailored-skills-grid"></div>
+
+        <div class="add-skill-bar">
+          <input type="text" id="new-skill-input" placeholder="Add custom skill (e.g. Snowflake, Power Query)...">
+          <select id="new-skill-category-select"></select>
+          <button type="button" class="secondary" id="add-custom-skill-btn">+ Add Skill</button>
+        </div>
+        <div id="skills-sync-status" class="sync-status-msg"></div>
+      </div>
+
+      <div class="section-header" id="honesty-section-header">
+        <span class="section-eyebrow"><b>03</b> / Honesty Advisory</span>
+        <h2>Interview Preparation &amp; Gap Advisory</h2>
+        <span class="rule"></span>
+      </div>
+
+      <div class="card honesty-card" id="honesty-card">
+        <div class="honesty-header">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <path d="M12 8v4"></path>
+            <path d="M12 16h.01"></path>
+          </svg>
+          <span>Truthful Match &amp; Non-Fabrication Protocol</span>
+        </div>
+        <p class="honesty-text" id="honesty-text"></p>
+      </div>
+
+      <div class="section-header">
+        <span class="section-eyebrow"><b>04</b> / Diff</span>
         <h2>Tailored Bullet Changes</h2>
         <span class="rule"></span>
       </div>
@@ -162,7 +205,7 @@
   </div>
 
   <script src="/static/mountain-canvas.js"></script>
-  <script src="/static/ui.js?v=1.0.5"></script>
-  <script src="/static/jd.js"></script>
+  <script src="/static/ui.js?v=1.0.6"></script>
+  <script src="/static/jd.js?v=1.0.6"></script>
 </body>
 </html>

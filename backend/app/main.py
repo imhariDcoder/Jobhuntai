@@ -12,7 +12,7 @@ truststore.inject_into_ssl()
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from typing import Literal
+from typing import Literal, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -95,6 +95,8 @@ class TailorPreviewResponse(BaseModel):
     match_score: float
     diffs: list[BulletDiffOut]
     selected_bullets: dict[str, list[str]]
+    honesty_note: str = ""
+    profile_skills: list[dict] = []
 
 
 @app.post("/api/resume/tailor/preview", response_model=TailorPreviewResponse)
@@ -123,11 +125,14 @@ def tailor_preview(payload: TailorRequest) -> TailorPreviewResponse:
         match_score=result.match_score,
         diffs=[BulletDiffOut(**vars(d)) for d in result.diffs],
         selected_bullets=result.selected_bullets,
+        honesty_note=result.honesty_note,
+        profile_skills=profile_dict.get("skills", []),
     )
 
 
 class TailorDownloadRequest(BaseModel):
     selected_bullets: dict[str, list[str]]
+    tailored_skills: Optional[list[dict]] = None
 
 
 @app.post("/api/resume/tailor/download")
@@ -138,7 +143,11 @@ def tailor_download(payload: TailorDownloadRequest) -> FileResponse:
     with get_session() as session:
         profile_dict = crud.get_full_profile(session)
 
-    tex = render_resume_tex(profile_dict, selected_bullets=payload.selected_bullets)
+    tex = render_resume_tex(
+        profile_dict,
+        selected_bullets=payload.selected_bullets,
+        tailored_skills=payload.tailored_skills,
+    )
     pdf_path = compile_tex_to_pdf(tex)
 
     return FileResponse(pdf_path, media_type="application/pdf", filename="resume_tailored.pdf")

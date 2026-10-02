@@ -30,6 +30,7 @@ class TailorResult:
     match_score: float
     diffs: list[BulletDiff] = field(default_factory=list)
     selected_bullets: dict[str, list[str]] = field(default_factory=dict)
+    honesty_note: str = ""
 
 
 def _entry_label(entry: dict, kind: str) -> str:
@@ -138,6 +139,23 @@ def tailor_profile(profile: dict, jd_text: str, provider: LLMProvider) -> Tailor
     matched, missing = compute_keyword_coverage(profile, jd_keywords)
     match_score = len(matched) / len(jd_keywords) if jd_keywords else 0.0
 
+    honesty_note = getattr(provider, "last_honesty_note", "") or ""
+    if not honesty_note:
+        if missing:
+            gaps_str = ", ".join(f"'{k}'" for k in missing[:5])
+            if len(missing) > 5:
+                gaps_str += f" (+{len(missing) - 5} more)"
+            honesty_note = (
+                f"Interview Gap Advisory: The job description emphasizes requirements ({gaps_str}) "
+                "that lack direct evidence in your source CV. These were intentionally omitted from the rewritten bullets rather than fabricated. "
+                "Be prepared to address these gaps honestly in interviews by highlighting adjacent skills or your capacity to ramp up quickly."
+            )
+        else:
+            honesty_note = (
+                "Interview Alignment Note: High direct alignment. Your profile covers all primary technical requirements and domain terminology "
+                "extracted from this job description without needing any claim upgrades."
+            )
+
     return TailorResult(
         jd_keywords=jd_keywords,
         matched_keywords=matched,
@@ -145,4 +163,5 @@ def tailor_profile(profile: dict, jd_text: str, provider: LLMProvider) -> Tailor
         match_score=match_score,
         diffs=diffs,
         selected_bullets=selected_bullets,
+        honesty_note=honesty_note,
     )

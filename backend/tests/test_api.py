@@ -49,3 +49,13 @@ def test_put_replaces_previous_data_entirely():
         assert body["name"] == "Only A Name"
         assert body["experience"] == []
         assert body["projects"] == []
+
+
+def test_page_routes_serve_html():
+    with TestClient(app) as client:
+        for path in ["/", "/jd", "/kage"]:
+            resp = client.get(path)
+            assert resp.status_code == 200
+            assert "text/html" in resp.headers["content-type"]
+            assert b"SmartJob" in resp.content or b"Kage" in resp.content
+

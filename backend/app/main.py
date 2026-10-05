@@ -163,4 +163,9 @@ def jd_page() -> FileResponse:
     return FileResponse(_FRONTEND_DIR / "jd.html")
 
 
+@app.get("/kage")
+def kage_page() -> FileResponse:
+    return FileResponse(_FRONTEND_DIR / "kage.html")
+
+
 app.mount("/static", StaticFiles(directory=_FRONTEND_DIR), name="static")

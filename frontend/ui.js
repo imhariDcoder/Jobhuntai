@@ -377,3 +377,47 @@ if (document.readyState === "loading") {
   initExpandableTextareas();
 }
 
+// ============================================================= Kage Loading Screen Engine
+function initKageLoader() {
+  const pre = document.getElementById("pre");
+  if (!pre) return;
+  const fill = document.getElementById("pre-fill");
+  const pct = document.getElementById("pre-pct");
+
+  const isKagePage = window.location.pathname.includes("kage");
+  const hasVisited = sessionStorage.getItem("kage_visited");
+  const duration = isKagePage ? 850 : (hasVisited ? 300 : 750);
+  sessionStorage.setItem("kage_visited", "1");
+
+  let current = 0;
+  const startTime = performance.now();
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / duration);
+    // Ease out cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    current = Math.round(eased * 100);
+
+    if (fill) fill.style.width = current + "%";
+    if (pct) pct.textContent = current;
+
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      setTimeout(() => {
+        pre.classList.add("done");
+      }, 160);
+    }
+  }
+
+  requestAnimationFrame(step);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initKageLoader);
+} else {
+  initKageLoader();
+}
+
+

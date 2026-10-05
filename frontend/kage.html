@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kage · Kyoto Atmospheric Sanctuary | SmartJobAI</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44' fill='none'><circle cx='22' cy='24' r='9.5' stroke='%23e0231c' stroke-width='2'/><path d='M6 12h32M9.5 17h25M22 8v28' stroke='%23dfe7e0' stroke-width='2'/></svg>">
+</head>
+<body>
+  <!-- ============================================================ Kage Preloader -->
+  <div id="pre">
+    <div class="pre-in">
+      <div class="pre-mark">
+        <svg viewBox="0 0 44 44" fill="none" aria-hidden="true">
+          <circle cx="22" cy="24" r="9.5" stroke="#e0231c" stroke-width="1.2"/>
+          <path d="M6 12h32M9.5 17h25M22 8v28" stroke="#dfe7e0" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="pre-jp jp">影 の 道</div>
+      <div class="pre-bar"><i id="pre-fill"></i></div>
+      <div class="pre-meta">
+        <span>Raising the mountain temple</span><b><span id="pre-pct">0</span>%</b>
+      </div>
+    </div>
+  </div>
+
+  <div class="kage-viewport">
+    <header class="kage-nav">
+      <a class="brand" href="/">
+        <svg class="brand-symbol" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+          <circle cx="22" cy="24" r="9.5" stroke="#e0231c" stroke-width="1.2"/>
+          <path d="M6 12h32M9.5 17h25M22 8v28" stroke="#dfe7e0" stroke-width="1.2"/>
+        </svg>
+        <div class="brand-text">
+          <b>SmartJob AI</b>
+          <i>Zen Workspace</i>
+        </div>
+      </a>
+      <div class="kage-nav-links">
+        <a href="/">Master Profile</a>
+        <a href="/jd">Tailor to Job</a>
+      </div>
+    </header>
+
+    <main class="kage-hero-center">
+      <div class="eyebrow">
+        <span class="dot"></span>
+        <span>Kyoto Atmospheric Sanctuary · Chapter I</span>
+      </div>
+      <h1 class="kage-headline">
+        Silence on the <span>Mountain Temple</span>.
+      </h1>
+      <p class="kage-description">
+        Where ancient Japanese architecture meets the precision of the digital edge. 
+        Immerse in drifting vermilion embers, morning mountain mist, and calm focus designed for crafting resumes with absolute integrity.
+      </p>
+      <div class="kage-actions-row">
+        <a href="/" class="primary">
+          <span>Enter Master Profile</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/jd" class="secondary">
+          <span>Tailor Resume to Job</span>
+        </a>
+        <button type="button" class="secondary" id="replay-loader-btn" title="Replay loading sequence">
+          <span>Replay Invocation ↻</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="kage-footer-info">
+      <div>影 の 道 · Procedural 2.5D Canvas &amp; Particle Rig</div>
+      <div>Kyoto Atmosphere · 60 FPS</div>
+    </footer>
+  </div>
+
+  <script src="/static/mountain-canvas.js"></script>
+  <script src="/static/ui.js?v=1.0.7"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const replayBtn = document.getElementById('replay-loader-btn');
+      if (replayBtn) {
+        replayBtn.addEventListener('click', () => {
+          const pre = document.getElementById('pre');
+          const fill = document.getElementById('pre-fill');
+          const pct = document.getElementById('pre-pct');
+          if (!pre || !fill || !pct) return;
+
+          pre.classList.remove('done');
+          fill.style.width = '0%';
+          pct.textContent = '0';
+
+          let current = 0;
+          const startTime = performance.now();
+          const duration = 800;
+
+          function step(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(1, elapsed / duration);
+            const eased = 1 - Math.pow(1 - progress, 2);
+            current = Math.round(eased * 100);
+            fill.style.width = current + '%';
+            pct.textContent = current;
+
+            if (progress < 1) {
+              requestAnimationFrame(step);
+            } else {
+              setTimeout(() => {
+                pre.classList.add('done');
+              }, 220);
+            }
+          }
+          requestAnimationFrame(step);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

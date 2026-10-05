@@ -1553,4 +1553,196 @@ button.tiny {
   margin: 0;
 }
 
+/* ============================================================= Kage Loading Screen */
+#pre {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #040609;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s ease;
+  pointer-events: auto;
+}
+
+#pre.done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.pre-in {
+  width: min(420px, 78vw);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pre-mark {
+  margin: 0 auto 24px;
+  width: 46px;
+  height: 46px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pre-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 0 16px rgba(224, 35, 28, 0.65));
+}
+
+.pre-jp {
+  font-size: 13px;
+  letter-spacing: 0.55em;
+  color: var(--bone-dim);
+  margin-bottom: 22px;
+  text-indent: 0.55em;
+  opacity: 0.85;
+}
+
+.pre-bar {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  background: rgba(223, 231, 224, 0.12);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+#pre-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #e0231c, #ff5a3c);
+  box-shadow: 0 0 10px rgba(224, 35, 28, 0.8), 0 0 20px rgba(255, 90, 60, 0.5);
+  transition: width 0.16s ease-out;
+}
+
+.pre-meta {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pre-meta b {
+  font-weight: 500;
+  color: var(--bone);
+  letter-spacing: 0.1em;
+}
+
+/* ============================================================= Kage Sanctuary Experience */
+.kage-viewport {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2rem 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.kage-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 1.5rem;
+}
+
+.kage-nav-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.kage-nav-links a {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  transition: color 0.3s ease;
+}
+
+.kage-nav-links a:hover {
+  color: var(--bone);
+}
+
+.kage-hero-center {
+  margin: auto 0;
+  padding: 3rem 0;
+  max-width: 580px;
+}
+
+.kage-hero-center .eyebrow {
+  margin-bottom: 1.25rem;
+}
+
+.kage-headline {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--bone);
+  margin-bottom: 1.25rem;
+}
+
+.kage-headline span {
+  color: var(--vermilion);
+  text-shadow: 0 0 24px rgba(224, 35, 28, 0.45);
+}
+
+.kage-description {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--bone-dim);
+  margin-bottom: 2rem;
+  max-width: 520px;
+}
+
+.kage-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+
+.kage-actions-row .primary,
+.kage-actions-row .secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.kage-footer-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line-soft);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+
 

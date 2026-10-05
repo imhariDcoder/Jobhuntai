@@ -20,6 +20,7 @@ class BulletDiff:
     entry_label: str
     original_text: str
     rewritten_text: str
+    entry_key: str = ""
 
 
 @dataclass
@@ -125,7 +126,8 @@ def tailor_profile(profile: dict, jd_text: str, provider: LLMProvider) -> Tailor
     for selection in selections:
         info = bullet_info[selection.bullet_id]
         cleaned_text = clean_bullet_text(selection.rewritten_text)
-        selected_bullets[f"{info['kind']}:{info['entry_id']}"].append(cleaned_text)
+        entry_key = f"{info['kind']}:{info['entry_id']}"
+        selected_bullets[entry_key].append(cleaned_text)
         diffs.append(
             BulletDiff(
                 bullet_id=selection.bullet_id,
@@ -133,6 +135,7 @@ def tailor_profile(profile: dict, jd_text: str, provider: LLMProvider) -> Tailor
                 entry_label=info["entry_label"],
                 original_text=info["original_text"],
                 rewritten_text=cleaned_text,
+                entry_key=entry_key,
             )
         )
 

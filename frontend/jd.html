@@ -109,101 +109,138 @@
     </form>
 
     <div id="results" style="display: none;">
-      <div class="section-header">
-        <span class="section-eyebrow"><b>01</b> / Metrics</span>
-        <h2>Keyword Match Analysis</h2>
-        <span class="rule"></span>
-      </div>
+      <div class="tailor-workspace">
+        <div class="tailor-controls">
+          <div class="section-header">
+            <span class="section-eyebrow"><b>01</b> / Metrics</span>
+            <h2>Keyword Match Analysis</h2>
+            <span class="rule"></span>
+          </div>
 
-      <div class="card score-card">
-        <div class="score-header">
-          <label style="margin: 0;">ATS Compatibility Score</label>
-          <div class="score-row">
-            <div class="score-value" id="score-value">0%</div>
-            <div class="score-bar-track">
-              <div class="score-bar-fill" id="score-bar" style="width: 0%;"></div>
+          <div class="card score-card">
+            <div class="score-header">
+              <label style="margin: 0;">ATS Compatibility Score</label>
+              <div class="score-row">
+                <div class="score-value" id="score-value">0%</div>
+                <div class="score-bar-track">
+                  <div class="score-bar-fill" id="score-bar" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chip-group-label">
+              Matched Keywords (Click chip to locate in resume)
+            </div>
+            <div id="matched-chips" class="chip-list"></div>
+
+            <div class="chip-group-label" style="margin-top: 1.25rem;">
+              Missing Keywords (Required by JD)
+            </div>
+            <div id="missing-chips" class="chip-list"></div>
+
+            <p id="missing-note" style="font-size: 12px; color: var(--muted); margin: 0.6rem 0 0;"></p>
+            <p style="font-size: 11.5px; color: var(--muted); margin: 0.3rem 0 0;">
+              Tip: Click any missing keyword you possess to claim and append it to your master profile skills.
+            </p>
+
+            <div id="add-keywords-bar" style="display: none; margin-top: 1rem;">
+              <button type="button" class="add" id="add-keywords-btn" style="border-style: solid; background: rgba(224, 35, 28, 0.08); border-color: var(--vermilion); color: var(--bone);"></button>
+              <div id="add-keywords-status"></div>
+            </div>
+          </div>
+
+          <div class="section-header">
+            <span class="section-eyebrow"><b>02</b> / Skills</span>
+            <h2>Active Skills for this Tailored CV</h2>
+            <span class="rule"></span>
+          </div>
+
+          <div class="card skills-management-card">
+            <div class="skills-mgmt-desc">
+              <span>Manage skills for this specific job. <strong>Drag &amp; drop</strong> skills between categories or reorder them, click category title or ✎ to rename, click <strong>&times;</strong> to remove skills.</span>
+              <div class="skills-mgmt-actions">
+                <button type="button" class="secondary tiny" id="reset-skills-btn" title="Reset back to master profile skills">Reset to Profile</button>
+                <button type="button" class="secondary tiny" id="save-master-skills-btn" title="Save current tailored skills back to master profile">Save to Profile</button>
+              </div>
+            </div>
+
+            <div id="tailored-skills-list" class="tailored-skills-grid"></div>
+
+            <div class="add-skill-bar">
+              <input type="text" id="new-skill-input" placeholder="Add custom skill (e.g. Snowflake, Power Query)...">
+              <select id="new-skill-category-select"></select>
+              <button type="button" class="secondary" id="add-custom-skill-btn">+ Add Skill</button>
+            </div>
+            <div id="skills-sync-status" class="sync-status-msg"></div>
+          </div>
+
+          <div class="section-header" id="honesty-section-header">
+            <span class="section-eyebrow"><b>03</b> / Honesty Advisory</span>
+            <h2>Interview Preparation &amp; Gap Advisory</h2>
+            <span class="rule"></span>
+          </div>
+
+          <div class="card honesty-card" id="honesty-card">
+            <div class="honesty-header">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <path d="M12 8v4"></path>
+                  <path d="M12 16h.01"></path>
+                </svg>
+                <span>Truthful Match &amp; Non-Fabrication Protocol</span>
+              </div>
+              <button type="button" class="secondary tiny copy-gap-btn" id="copy-honesty-btn" title="Copy gap notes for interview preparation">📋 Copy Gap Notes</button>
+            </div>
+            <p class="honesty-text" id="honesty-text"></p>
+          </div>
+
+          <div class="section-header">
+            <span class="section-eyebrow"><b>04</b> / Diff</span>
+            <h2>Tailored Bullet Changes</h2>
+            <span class="rule"></span>
+          </div>
+
+          <div id="diffs-list"></div>
+          <div id="no-diffs-message" class="empty-state" style="display: none;">
+            No stored bullets matched this job description — try adding more relevant experience to your profile, or testing with a broader job description.
+          </div>
+        </div>
+
+        <!-- Sticky Live PDF Preview Dock -->
+        <div class="tailor-preview-dock">
+          <div class="live-preview-card">
+            <div class="live-preview-header">
+              <div class="live-preview-meta">
+                <span class="live-indicator-dot"></span>
+                <span class="live-preview-heading">Live PDF Preview</span>
+                <span id="page-budget-badge" class="page-budget-badge optimal" title="Estimates page budget density">✓ 1-Page Optimal</span>
+              </div>
+              <div class="live-preview-actions">
+                <button type="button" class="secondary tiny" id="live-pdf-refresh-btn" title="Refresh Live PDF Preview">⚡ Update</button>
+                <button type="button" class="secondary tiny" id="live-pdf-fullscreen-btn" title="Open Fullscreen Preview">⛶ Fullscreen</button>
+                <button type="button" class="primary tiny" id="live-pdf-download-btn" title="Download Tailored PDF">⬇ Download</button>
+              </div>
+            </div>
+
+            <div class="live-preview-body">
+              <div id="live-pdf-spinner" class="live-pdf-spinner" style="display: none;">
+                <div class="spinner"></div>
+                <span>Compiling Live Tailored PDF...</span>
+              </div>
+              <div id="live-pdf-placeholder" class="live-pdf-placeholder">
+                <div class="placeholder-icon">📄</div>
+                <div>Generating live PDF preview...</div>
+              </div>
+              <iframe id="live-pdf-iframe" class="live-pdf-iframe" style="display: none;" title="Live PDF Preview"></iframe>
+            </div>
+
+            <div class="live-preview-footer">
+              <div class="live-pdf-filename" id="live-pdf-filename">Resume_Tailored.pdf</div>
+              <span class="live-pdf-subtext">Real-time PDF compiler · LaTeX Engine</span>
             </div>
           </div>
         </div>
-
-        <div class="chip-group-label">
-          Matched Keywords (Present in Profile)
-        </div>
-        <div id="matched-chips" class="chip-list"></div>
-
-        <div class="chip-group-label" style="margin-top: 1.25rem;">
-          Missing Keywords (Required by JD)
-        </div>
-        <div id="missing-chips" class="chip-list"></div>
-
-        <p id="missing-note" style="font-size: 12px; color: var(--muted); margin: 0.6rem 0 0;"></p>
-        <p style="font-size: 11.5px; color: var(--muted); margin: 0.3rem 0 0;">
-          Tip: Click any missing keyword you possess to claim and append it to your master profile skills.
-        </p>
-
-        <div id="add-keywords-bar" style="display: none; margin-top: 1rem;">
-          <button type="button" class="add" id="add-keywords-btn" style="border-style: solid; background: rgba(224, 35, 28, 0.08); border-color: var(--vermilion); color: var(--bone);"></button>
-          <div id="add-keywords-status"></div>
-        </div>
-      </div>
-
-      <div class="section-header">
-        <span class="section-eyebrow"><b>02</b> / Skills</span>
-        <h2>Active Skills for this Tailored CV</h2>
-        <span class="rule"></span>
-      </div>
-
-      <div class="card skills-management-card">
-        <div class="skills-mgmt-desc">
-          <span>Manage skills for this specific job's resume. <strong>Drag &amp; drop</strong> skills between categories or reorder them, click <strong>&times;</strong> to remove skills, or add new technical skills below.</span>
-          <div class="skills-mgmt-actions">
-            <button type="button" class="secondary tiny" id="reset-skills-btn" title="Reset back to master profile skills">Reset to Profile</button>
-            <button type="button" class="secondary tiny" id="save-master-skills-btn" title="Save current tailored skills back to master profile">Save to Profile</button>
-          </div>
-        </div>
-
-        <div id="tailored-skills-list" class="tailored-skills-grid"></div>
-
-        <div class="add-skill-bar">
-          <input type="text" id="new-skill-input" placeholder="Add custom skill (e.g. Snowflake, Power Query)...">
-          <select id="new-skill-category-select"></select>
-          <button type="button" class="secondary" id="add-custom-skill-btn">+ Add Skill</button>
-        </div>
-        <div id="skills-sync-status" class="sync-status-msg"></div>
-      </div>
-
-      <div class="section-header" id="honesty-section-header">
-        <span class="section-eyebrow"><b>03</b> / Honesty Advisory</span>
-        <h2>Interview Preparation &amp; Gap Advisory</h2>
-        <span class="rule"></span>
-      </div>
-
-      <div class="card honesty-card" id="honesty-card">
-        <div class="honesty-header">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            <path d="M12 8v4"></path>
-            <path d="M12 16h.01"></path>
-          </svg>
-          <span>Truthful Match &amp; Non-Fabrication Protocol</span>
-        </div>
-        <p class="honesty-text" id="honesty-text"></p>
-      </div>
-
-      <div class="section-header">
-        <span class="section-eyebrow"><b>04</b> / Diff</span>
-        <h2>Tailored Bullet Changes</h2>
-        <span class="rule"></span>
-      </div>
-
-      <div id="diffs-list"></div>
-      <div id="no-diffs-message" class="empty-state" style="display: none;">
-        No stored bullets matched this job description — try adding more relevant experience to your profile, or testing with a broader job description.
-      </div>
-
-      <div class="action-bar-static">
-        <button type="button" class="primary" id="preview-pdf-btn">Preview Tailored PDF</button>
-        <div id="download-status"></div>
       </div>
     </div>
   </main>

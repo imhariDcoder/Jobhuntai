@@ -5,6 +5,167 @@ let lastResult = null; // { matched_keywords, missing_keywords, match_score, dif
 let selectedMissingKeywords = new Set();
 let masterProfileSkills = [];
 let tailoredSkills = [];
+let livePdfBlob = null;
+let livePdfUrl = null;
+let renderDebounceTimer = null;
+let activeHighlightedKeyword = null;
+window.masterProfileName = "";
+
+function getSmartPdfFilename() {
+  let candidateName = "Resume";
+  if (window.masterProfileName) {
+    candidateName = window.masterProfileName.trim().replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+  }
+
+  const jdInput = document.getElementById("field-jd");
+  const jdText = jdInput ? jdInput.value.trim() : "";
+  let roleName = "Tailored";
+
+  const roleMatch = jdText.match(/(?:role|title|position|job title)[:\s\-]+([A-Za-z0-9\s\/\&\-]+)/i);
+  if (roleMatch && roleMatch[1]) {
+    roleName = roleMatch[1].split("\n")[0].trim().replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+  } else {
+    const firstLine = jdText.split("\n")[0].trim();
+    if (firstLine.length > 3 && firstLine.length < 50) {
+      roleName = firstLine.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+    }
+  }
+
+  if (roleName.length > 30) roleName = roleName.slice(0, 30);
+  return `${candidateName}_${roleName}_Resume.pdf`.replace(/__+/g, "_");
+}
+
+function updateSmartFilename() {
+  const filename = getSmartPdfFilename();
+  const label = document.getElementById("live-pdf-filename");
+  if (label) label.textContent = filename;
+}
+
+function updatePageBudget() {
+  const badge = document.getElementById("page-budget-badge");
+  if (!badge) return;
+
+  const totalSkills = tailoredSkills.reduce((acc, c) => acc + (c.items ? c.items.length : 0), 0);
+  let totalBullets = 0;
+  if (lastResult && lastResult.selected_bullets) {
+    for (const list of Object.values(lastResult.selected_bullets)) {
+      totalBullets += (list || []).length;
+    }
+  }
+
+  // Estimated line budget
+  const skillsLines = tailoredSkills.length + Math.ceil(totalSkills / 3.5);
+  const bulletLines = Math.round(totalBullets * 1.7);
+  const estimatedTotalLines = 9 + skillsLines + bulletLines;
+
+  if (estimatedTotalLines <= 36) {
+    badge.className = "page-budget-badge optimal";
+    badge.textContent = `✓ 1-Page Optimal (~${estimatedTotalLines} lines)`;
+    badge.title = `Estimated ${estimatedTotalLines} lines total (${totalBullets} bullets, ${totalSkills} skills). Fits comfortably on 1 page.`;
+  } else {
+    badge.className = "page-budget-badge warning";
+    badge.textContent = `⚠ Page 2 Spill Warning (~${estimatedTotalLines} lines)`;
+    badge.title = `Estimated ${estimatedTotalLines} lines total. May spill onto page 2. Consider trimming 1-2 bullets or unneeded skills.`;
+  }
+}
+
+async function renderLivePdfPreview(silent = false) {
+  if (!lastResult) return;
+  const spinner = document.getElementById("live-pdf-spinner");
+  const placeholder = document.getElementById("live-pdf-placeholder");
+  const iframe = document.getElementById("live-pdf-iframe");
+  const refreshBtn = document.getElementById("live-pdf-refresh-btn");
+
+  if (!silent && spinner) spinner.style.display = "flex";
+  if (refreshBtn) refreshBtn.disabled = true;
+
+  try {
+    const resp = await fetch("/api/resume/tailor/download", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        selected_bullets: lastResult.selected_bullets,
+        tailored_skills: tailoredSkills,
+      }),
+    });
+    if (!resp.ok) {
+      throw new Error(`Compile failed (${resp.status})`);
+    }
+    const blob = await resp.blob();
+    livePdfBlob = blob;
+
+    if (livePdfUrl) URL.revokeObjectURL(livePdfUrl);
+    livePdfUrl = URL.createObjectURL(blob);
+
+    if (placeholder) placeholder.style.display = "none";
+    if (iframe) {
+      iframe.src = livePdfUrl + "#toolbar=0&navpanes=0";
+      iframe.style.display = "block";
+    }
+
+    updateSmartFilename();
+    updatePageBudget();
+  } catch (err) {
+    console.error("Live PDF render error:", err);
+  } finally {
+    if (spinner) spinner.style.display = "none";
+    if (refreshBtn) refreshBtn.disabled = false;
+  }
+}
+
+function queueLivePdfRender() {
+  if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
+  renderDebounceTimer = setTimeout(() => {
+    renderLivePdfPreview(false);
+  }, 850);
+}
+
+function downloadCurrentTailoredPdf() {
+  if (!livePdfBlob) return;
+  const filename = getSmartPdfFilename();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(livePdfBlob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function toggleKeywordHighlight(keyword, chipEl) {
+  const isCurrentlyActive = activeHighlightedKeyword === keyword;
+
+  document.querySelectorAll(".chip.matched.keyword-active").forEach((c) => c.classList.remove("keyword-active"));
+  document.querySelectorAll(".keyword-matched-target").forEach((el) => el.classList.remove("keyword-matched-target"));
+
+  if (isCurrentlyActive) {
+    activeHighlightedKeyword = null;
+    return;
+  }
+
+  activeHighlightedKeyword = keyword;
+  chipEl.classList.add("keyword-active");
+
+  const kwLower = keyword.toLowerCase();
+  let firstTarget = null;
+
+  document.querySelectorAll(".tailored-skill-pill").forEach((pill) => {
+    if (pill.textContent.toLowerCase().includes(kwLower)) {
+      pill.classList.add("keyword-matched-target");
+      if (!firstTarget) firstTarget = pill;
+    }
+  });
+
+  document.querySelectorAll(".diff-rewritten").forEach((bullet) => {
+    if (bullet.textContent.toLowerCase().includes(kwLower)) {
+      bullet.classList.add("keyword-matched-target");
+      if (!firstTarget) firstTarget = bullet;
+    }
+  });
+
+  if (firstTarget) {
+    firstTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
 
 /* ============================================================= Client-side Domain Categorization Engine */
 const CLIENT_SKILL_DOMAINS = [
@@ -234,8 +395,10 @@ function renderChips() {
   matchedContainer.innerHTML = "";
   for (const kw of lastResult.matched_keywords) {
     const chip = document.createElement("span");
-    chip.className = "chip matched";
+    chip.className = "chip matched clickable-keyword";
     chip.textContent = `✓ ${kw}`;
+    chip.title = `Click to locate '${kw}' in resume bullets and skills`;
+    chip.addEventListener("click", () => toggleKeywordHighlight(kw, chip));
     matchedContainer.appendChild(chip);
   }
 
@@ -308,6 +471,8 @@ function moveSkill(sourceCatIdx, sourceItemIdx, targetCatIdx, targetInsertIdx) {
     sourceItems.splice(Math.max(0, Math.min(adjustedIdx, sourceItems.length)), 0, skill);
     renderTailoredSkills();
     setStatus("skills-sync-status", `Reordered "${skill}" in ${sourceCatName}.`);
+    updatePageBudget();
+    queueLivePdfRender();
     return;
   }
 
@@ -326,6 +491,8 @@ function moveSkill(sourceCatIdx, sourceItemIdx, targetCatIdx, targetInsertIdx) {
 
   renderTailoredSkills();
   setStatus("skills-sync-status", `Moved "${skill}" from ${sourceCatName} → ${targetCatName}.`);
+  updatePageBudget();
+  queueLivePdfRender();
 }
 
 function renderTailoredSkills() {
@@ -373,9 +540,64 @@ function renderTailoredSkills() {
     const header = document.createElement("div");
     header.className = "tailored-cat-header";
 
+    const titleWrap = document.createElement("div");
+    titleWrap.className = "tailored-cat-title-wrap";
+
     const title = document.createElement("span");
     title.className = "tailored-cat-title";
     title.textContent = catObj.category;
+    title.title = "Click to rename category";
+
+    const renameBtn = document.createElement("button");
+    renameBtn.type = "button";
+    renameBtn.className = "cat-rename-btn";
+    renameBtn.innerHTML = "✎";
+    renameBtn.title = `Rename "${catObj.category}"`;
+
+    const startRename = () => {
+      const currentName = catObj.category;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "cat-rename-input";
+      input.value = currentName;
+
+      const finishRename = () => {
+        const val = input.value.trim();
+        if (val && val !== currentName) {
+          catObj.category = val;
+          renderTailoredSkills();
+          setStatus("skills-sync-status", `Renamed category to "${val}".`);
+          updatePageBudget();
+          queueLivePdfRender();
+        } else {
+          renderTailoredSkills();
+        }
+      };
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          finishRename();
+        } else if (e.key === "Escape") {
+          renderTailoredSkills();
+        }
+      });
+      input.addEventListener("blur", finishRename);
+
+      titleWrap.innerHTML = "";
+      titleWrap.appendChild(input);
+      input.focus();
+      input.select();
+    };
+
+    title.addEventListener("click", startRename);
+    renameBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      startRename();
+    });
+
+    titleWrap.appendChild(title);
+    titleWrap.appendChild(renameBtn);
 
     const headerRight = document.createElement("div");
     headerRight.style.display = "flex";
@@ -398,10 +620,12 @@ function renderTailoredSkills() {
       tailoredSkills.splice(catIdx, 1);
       renderTailoredSkills();
       setStatus("skills-sync-status", `Removed "${catName}" category from this resume.`);
+      updatePageBudget();
+      queueLivePdfRender();
     });
     headerRight.appendChild(delCatBtn);
 
-    header.appendChild(title);
+    header.appendChild(titleWrap);
     header.appendChild(headerRight);
     box.appendChild(header);
 
@@ -514,6 +738,8 @@ function removeSkillFromTailored(catIdx, itemIdx) {
   tailoredSkills[catIdx].items.splice(itemIdx, 1);
   renderTailoredSkills();
   setStatus("skills-sync-status", `Removed "${removedName}" from this tailored resume.`);
+  updatePageBudget();
+  queueLivePdfRender();
 }
 
 function addSkillToTailored(categoryName, skillName) {
@@ -531,6 +757,8 @@ function addSkillToTailored(categoryName, skillName) {
     targetCat.items.push(skillName);
     renderTailoredSkills();
     setStatus("skills-sync-status", `Added "${skillName}" to ${targetCat.category}.`);
+    updatePageBudget();
+    queueLivePdfRender();
   } else {
     setStatus("skills-sync-status", `"${skillName}" is already present in ${targetCat.category}.`, true);
   }
@@ -567,6 +795,8 @@ async function addSelectedKeywordsToSkills() {
     }
 
     renderTailoredSkills();
+    updatePageBudget();
+    queueLivePdfRender();
 
     // Also persist to master profile
     const resp = await fetch("/api/profile");
@@ -622,6 +852,8 @@ function renderResults(data) {
   lastResult = data;
   selectedMissingKeywords.clear();
 
+  document.querySelector(".page")?.classList.add("has-results");
+
   // Initialize master profile skills and editable tailored skills
   masterProfileSkills = JSON.parse(JSON.stringify(data.profile_skills || []));
   tailoredSkills = JSON.parse(JSON.stringify(data.profile_skills || []));
@@ -643,6 +875,19 @@ function renderResults(data) {
     honestyHeader.style.display = "none";
   }
 
+  const copyHonestyBtn = document.getElementById("copy-honesty-btn");
+  if (copyHonestyBtn) {
+    copyHonestyBtn.onclick = () => {
+      const text = honestyText.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        copyHonestyBtn.textContent = "✓ Copied Notes!";
+        setTimeout(() => {
+          copyHonestyBtn.textContent = "📋 Copy Gap Notes";
+        }, 2200);
+      });
+    };
+  }
+
   const diffsList = document.getElementById("diffs-list");
   const noDiffsMessage = document.getElementById("no-diffs-message");
   diffsList.innerHTML = "";
@@ -654,11 +899,24 @@ function renderResults(data) {
     for (const diff of data.diffs) {
       const card = document.createElement("div");
       card.className = "card diff-card";
+      card.setAttribute("data-bullet-id", diff.bullet_id);
+
+      const headerRow = document.createElement("div");
+      headerRow.className = "diff-header-row";
 
       const label = document.createElement("div");
       label.className = "diff-entry-label";
       label.textContent = diff.entry_label;
-      card.appendChild(label);
+      headerRow.appendChild(label);
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "diff-edit-btn";
+      editBtn.innerHTML = "✎ Edit Bullet";
+      editBtn.title = "Directly modify or fine-tune this tailored bullet";
+      headerRow.appendChild(editBtn);
+
+      card.appendChild(headerRow);
 
       const original = document.createElement("div");
       original.className = "diff-original";
@@ -675,12 +933,94 @@ function renderResults(data) {
       rewritten.appendChild(highlightKeywords(diff.rewritten_text, data.matched_keywords));
       card.appendChild(rewritten);
 
+      // In-place bullet edit box
+      const editBox = document.createElement("div");
+      editBox.className = "diff-edit-box";
+      editBox.style.display = "none";
+
+      const textarea = document.createElement("textarea");
+      textarea.className = "diff-edit-textarea";
+      textarea.value = diff.rewritten_text;
+      editBox.appendChild(textarea);
+
+      const editActions = document.createElement("div");
+      editActions.className = "diff-edit-actions";
+
+      const saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.className = "primary tiny";
+      saveBtn.textContent = "Save Bullet";
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.className = "secondary tiny";
+      cancelBtn.textContent = "Cancel";
+
+      editActions.appendChild(saveBtn);
+      editActions.appendChild(cancelBtn);
+      editBox.appendChild(editActions);
+      card.appendChild(editBox);
+
+      editBtn.addEventListener("click", () => {
+        const isEditing = editBox.style.display === "block";
+        if (isEditing) {
+          editBox.style.display = "none";
+          rewritten.style.display = "block";
+          editBtn.innerHTML = "✎ Edit Bullet";
+        } else {
+          textarea.value = diff.rewritten_text;
+          editBox.style.display = "block";
+          rewritten.style.display = "none";
+          editBtn.innerHTML = "✕ Cancel";
+          textarea.focus();
+        }
+      });
+
+      cancelBtn.addEventListener("click", () => {
+        editBox.style.display = "none";
+        rewritten.style.display = "block";
+        editBtn.innerHTML = "✎ Edit Bullet";
+      });
+
+      saveBtn.addEventListener("click", () => {
+        const newText = textarea.value.trim();
+        if (!newText) return;
+
+        const oldText = diff.rewritten_text;
+        diff.rewritten_text = newText;
+
+        const entryKey = diff.entry_key;
+        if (entryKey && lastResult.selected_bullets[entryKey]) {
+          const list = lastResult.selected_bullets[entryKey];
+          const idx = list.indexOf(oldText);
+          if (idx !== -1) {
+            list[idx] = newText;
+          } else {
+            list.push(newText);
+          }
+        }
+
+        rewritten.innerHTML = "";
+        rewritten.appendChild(highlightKeywords(newText, lastResult.matched_keywords));
+        editBox.style.display = "none";
+        rewritten.style.display = "block";
+        editBtn.innerHTML = "✎ Edit Bullet";
+
+        updatePageBudget();
+        queueLivePdfRender();
+      });
+
       diffsList.appendChild(card);
     }
   }
 
+  updateSmartFilename();
+  updatePageBudget();
   document.getElementById("results").style.display = "block";
   document.getElementById("results").scrollIntoView({ behavior: "smooth", block: "start" });
+
+  // Launch initial live PDF preview compilation
+  renderLivePdfPreview(false);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -783,6 +1123,8 @@ document.addEventListener("DOMContentLoaded", () => {
       tailoredSkills = JSON.parse(JSON.stringify(masterProfileSkills));
       renderTailoredSkills();
       setStatus("skills-sync-status", "Reset skills back to your original profile.");
+      updatePageBudget();
+      queueLivePdfRender();
     });
   }
 
@@ -813,6 +1155,41 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("add-keywords-btn").addEventListener("click", addSelectedKeywordsToSkills);
+
+  document.getElementById("field-jd")?.addEventListener("input", () => {
+    if (lastResult) updateSmartFilename();
+  });
+
+  // Pre-load candidate profile name for smart PDF naming
+  fetch("/api/profile")
+    .then((r) => r.json())
+    .then((p) => {
+      if (p && p.name) window.masterProfileName = p.name;
+    })
+    .catch(() => {});
+
+  // Live preview dock buttons
+  document.getElementById("live-pdf-refresh-btn")?.addEventListener("click", () => {
+    renderLivePdfPreview(false);
+  });
+
+  document.getElementById("live-pdf-download-btn")?.addEventListener("click", () => {
+    downloadCurrentTailoredPdf();
+  });
+
+  document.getElementById("live-pdf-fullscreen-btn")?.addEventListener("click", () => {
+    if (livePdfBlob) {
+      showPdfPreview(livePdfBlob, getSmartPdfFilename());
+    } else {
+      renderLivePdfPreview(false).then(() => {
+        if (livePdfBlob) showPdfPreview(livePdfBlob, getSmartPdfFilename());
+      });
+    }
+  });
+
+  document.getElementById("pdf-modal-download")?.addEventListener("click", () => {
+    downloadCurrentTailoredPdf();
+  });
 
   document.getElementById("jd-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -882,8 +1259,9 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(body.detail || `Request failed (${resp.status})`);
       }
       const blob = await resp.blob();
+      livePdfBlob = blob;
       hideProgress("download-status");
-      showPdfPreview(blob, "resume_tailored.pdf");
+      showPdfPreview(blob, getSmartPdfFilename());
       setStatus("download-status", "Preview ready.");
     } catch (err) {
       hideProgress("download-status");

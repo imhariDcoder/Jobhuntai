@@ -107,6 +107,7 @@ class BulletDiffOut(BaseModel):
     entry_label: str
     original_text: str
     rewritten_text: str
+    entry_key: str = ""
 
 
 class TailorPreviewResponse(BaseModel):

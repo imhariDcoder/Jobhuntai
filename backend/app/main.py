@@ -27,6 +27,7 @@ from app.latex.injector import render_resume_tex
 from app.llm.base import InvalidBulletSelectionError, LLMProviderError
 from app.llm.factory import get_provider
 from app.schemas import Profile
+from app.skills_categorizer import classify_skills_batch, clean_and_redistribute_skills
 from app.tailor import tailor_profile
 
 _FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
@@ -56,9 +57,29 @@ def get_profile() -> Profile:
 
 @app.put("/api/profile", response_model=Profile)
 def put_profile(profile: Profile) -> Profile:
+    profile_dict = profile.model_dump()
+    if profile_dict.get("skills"):
+        profile_dict["skills"] = clean_and_redistribute_skills(profile_dict["skills"])
+        profile = Profile.model_validate(profile_dict)
     with get_session() as session:
         crud.replace_full_profile(session, profile)
         return Profile.model_validate(crud.get_full_profile(session))
+
+
+class CategorizeSkillsRequest(BaseModel):
+    skills: list[str]
+    existing_categories: list[str] = []
+
+
+class CategorizeSkillsResponse(BaseModel):
+    assignments: dict[str, str]
+
+
+@app.post("/api/skills/categorize", response_model=CategorizeSkillsResponse)
+def categorize_skills_endpoint(req: CategorizeSkillsRequest) -> CategorizeSkillsResponse:
+    return CategorizeSkillsResponse(
+        assignments=classify_skills_batch(req.skills, req.existing_categories)
+    )
 
 
 @app.post("/api/resume/render")

@@ -1,11 +1,196 @@
 const PROVIDER_STORAGE_KEY = "smartjobai_provider";
 const PROVIDER_LABELS = { openai: "OpenAI", anthropic: "Anthropic", gemini: "Google Gemini" };
-const ADDED_SKILLS_CATEGORY = "Additional Skills (self-reported)";
 
 let lastResult = null; // { matched_keywords, missing_keywords, match_score, diffs, selected_bullets, honesty_note, profile_skills }
 let selectedMissingKeywords = new Set();
 let masterProfileSkills = [];
 let tailoredSkills = [];
+
+/* ============================================================= Client-side Domain Categorization Engine */
+const CLIENT_SKILL_DOMAINS = [
+  {
+    domain: "Languages",
+    defaultCategory: "Programming & Query Languages",
+    keywords: ["language", "programming", "query", "coding", "scripting"],
+    exact: new Set([
+      "python", "sql", "r", "java", "c", "c++", "c#", "typescript", "javascript",
+      "js", "ts", "go", "golang", "rust", "php", "ruby", "bash", "shell",
+      "powershell", "scala", "kotlin", "swift", "perl", "dart", "lua", "julia",
+      "html", "css", "sass", "scss", "graphql", "sparql", "cypher", "vba"
+    ]),
+    regex: /\b(python|sql|java|typescript|javascript|golang|rust|bash|scala|c\+\+|c#|kotlin|swift|ruby|php|html5?|css3?)\b|query\s+language|programming\s+language/i
+  },
+  {
+    domain: "BI & Visualization",
+    defaultCategory: "BI & Visualization",
+    keywords: ["visual", "bi", "report", "dashboard", "intelligence", "tableau", "power bi"],
+    exact: new Set([
+      "power bi", "powerbi", "tableau", "looker", "looker studio", "qlik", "qlikview",
+      "qlik sense", "excel", "advanced excel", "excel (advanced)", "dax", "power query",
+      "matplotlib", "seaborn", "plotly", "d3.js", "dash", "streamlit", "superset",
+      "metabase", "microstrategy", "ssrs", "ssis", "ssas", "reporting",
+      "data visualization", "interactive dashboards", "executive bi dashboards",
+      "executive dashboards", "kpi dashboards", "business intelligence"
+    ]),
+    regex: /dashboard|visualization|visuals|power\s*bi|tableau|looker|power\s*query|\bdax\b|reporting|business\s+intelligence|kpi/i
+  },
+  {
+    domain: "Data & Databases",
+    defaultCategory: "Data & Databases",
+    keywords: ["data", "database", "storage", "warehouse", "pipeline", "etl", "db"],
+    exact: new Set([
+      "pandas", "numpy", "scipy", "postgresql", "postgres", "mysql", "sqlite",
+      "mongodb", "redis", "cassandra", "dynamodb", "oracle", "snowflake",
+      "bigquery", "redshift", "databricks", "spark", "pyspark", "hadoop", "hive",
+      "kafka", "airflow", "dbt", "etl", "elt", "data modeling", "data warehouse",
+      "data warehousing", "data lake", "data pipelines", "data extraction",
+      "data manipulation", "manipulation", "data wrangling", "data mining",
+      "data cleansing", "data cleaning", "data validation", "data ingestion",
+      "relational databases", "nosql", "oltp", "olap",
+      "transactional and customer behavior datasets", "customer behavior datasets",
+      "transactional datasets", "sql queries"
+    ]),
+    regex: /data\s+(extraction|manipulation|wrangling|cleansing|cleaning|modeling|pipeline|warehouse|lake|ingestion|storage|mining)|dataset|database|postgres|mysql|mongodb|redis|snowflake|bigquery|\b(spark|pyspark|airflow|dbt|pandas|numpy|scipy|etl|elt|nosql|olap|oltp)\b|sql\s+queries|relational\s+data/i
+  },
+  {
+    domain: "Machine Learning & AI",
+    defaultCategory: "Machine Learning & AI",
+    keywords: ["machine learning", "ml", "ai", "artificial intelligence", "data science", "deep learning", "neural"],
+    exact: new Set([
+      "scikit-learn", "sklearn", "tensorflow", "pytorch", "keras", "opencv",
+      "cnn", "cnns", "rnn", "lstm", "transformer", "transformers", "llm", "llms",
+      "nlp", "natural language processing", "nltk", "spacy", "huggingface",
+      "genai", "generative ai", "langchain", "llamaindex", "vector database",
+      "chromadb", "pinecone", "faiss", "machine learning", "deep learning",
+      "supervised learning", "unsupervised learning", "computer vision",
+      "predictive modeling", "reinforcement learning"
+    ]),
+    regex: /machine\s+learning|deep\s+learning|neural\s+net|scikit|tensorflow|pytorch|\b(nlp|cnn|cnns|rnn|lstm|llm|llms|genai|langchain)\b|predictive\s+model|computer\s+vision|generative\s+ai/i
+  },
+  {
+    domain: "Testing & QA",
+    defaultCategory: "Testing & Automation",
+    keywords: ["test", "testing", "qa", "automation", "quality"],
+    exact: new Set([
+      "selenium", "cypress", "playwright", "puppeteer", "pytest", "junit",
+      "testng", "jest", "mocha", "cucumber", "test automation", "unit testing",
+      "integration testing", "e2e testing", "qa", "quality assurance",
+      "automated testing", "load testing", "jmeter", "postman testing"
+    ]),
+    regex: /test\s+automation|unit\s+test|automated\s+test|selenium|cypress|playwright|pytest|quality\s+assurance|\b(qa|e2e|junit)\b/i
+  },
+  {
+    domain: "Cloud & DevOps",
+    defaultCategory: "Cloud & DevOps",
+    keywords: ["cloud", "devops", "infra", "infrastructure", "platform", "deployment", "ci/cd", "container"],
+    exact: new Set([
+      "aws", "amazon web services", "azure", "microsoft azure", "gcp",
+      "google cloud", "google cloud platform", "docker", "kubernetes", "k8s",
+      "terraform", "ansible", "jenkins", "github actions", "gitlab ci", "ci/cd",
+      "linux", "unix", "ubuntu", "nginx", "apache", "serverless", "lambda",
+      "cloudformation", "helm", "openshift"
+    ]),
+    regex: /\b(aws|azure|gcp|docker|kubernetes|k8s|terraform|ansible|jenkins|ci\/cd|linux|unix|ubuntu|nginx|serverless|lambda|helm|openshift)\b|cloud|devops|infrastructure|container/i
+  },
+  {
+    domain: "Developer Tools",
+    defaultCategory: "Tools",
+    keywords: ["tool", "tools", "platform", "developer tools", "utilities", "ide"],
+    exact: new Set([
+      "git", "github", "gitlab", "bitbucket", "jira", "confluence", "trello",
+      "asana", "postman", "swagger", "insomnia", "vs code", "visual studio",
+      "pycharm", "intellij", "eclipse", "docker desktop", "terminal"
+    ]),
+    regex: /\b(git|github|gitlab|bitbucket|jira|confluence|postman|swagger|vs\s*code|pycharm|intellij)\b|developer\s+tools/i
+  },
+  {
+    domain: "Concepts & Methodologies",
+    defaultCategory: "Concepts",
+    keywords: ["concept", "concepts", "methodolog", "practice", "management", "leadership", "competenc", "analytical"],
+    exact: new Set([
+      "agile", "scrum", "kanban", "sprint planning", "sdlc", "waterfall",
+      "exploratory data analysis", "exploratory data analysis (eda)", "eda",
+      "statistical analysis", "statistics", "hypothesis testing", "a/b testing",
+      "experimentation", "root cause analysis", "performance optimization",
+      "optimization", "object-oriented programming", "oop", "design patterns",
+      "solid principles", "rest apis", "rest", "restful", "system design",
+      "stakeholder management", "cross-functional stakeholders",
+      "cross-functional collaboration", "cross-functional leadership",
+      "senior leadership", "leadership", "mentorship", "requirement gathering",
+      "business analysis", "data governance", "compliance", "data-driven insights",
+      "problem solving", "senior data analyst", "business intelligence specialist"
+    ]),
+    regex: /agile|scrum|kanban|stakeholder|leadership|exploratory\s+data\s+analysis|\b(eda|oop|sdlc)\b|statistical|optimization|data-driven|management|specialist|analyst/i
+  }
+];
+
+function isGenericCategory(name) {
+  const n = (name || "").toLowerCase();
+  return ["additional", "self-reported", "targeted jd", "other skills", "misc"].some(junk => n.includes(junk));
+}
+
+function classifySkillClient(skill, existingCategories = []) {
+  const sClean = (skill || "").trim().toLowerCase();
+  if (!sClean) return "Tools";
+
+  const cleanExisting = existingCategories.filter(c => !isGenericCategory(c));
+
+  let matchedDomain = null;
+  for (const dom of CLIENT_SKILL_DOMAINS) {
+    if (dom.exact.has(sClean) || dom.regex.test(sClean)) {
+      matchedDomain = dom;
+      break;
+    }
+  }
+
+  if (matchedDomain) {
+    for (const cat of cleanExisting) {
+      const cLow = cat.toLowerCase();
+      if (matchedDomain.keywords.some(kw => cLow.includes(kw))) {
+        return cat;
+      }
+    }
+    return matchedDomain.defaultCategory;
+  }
+
+  for (const cat of cleanExisting) {
+    const cLow = cat.toLowerCase();
+    const words = sClean.split(/\s+/).filter(w => w.length > 3);
+    if (words.some(w => cLow.includes(w))) {
+      return cat;
+    }
+  }
+
+  if (/management|analysis|strategy|leadership|design|process/i.test(sClean)) {
+    const conceptCat = cleanExisting.find(c => /concept|methodolog|competenc/i.test(c));
+    return conceptCat || "Concepts";
+  }
+
+  const toolCat = cleanExisting.find(c => /tool/i.test(c));
+  return toolCat || "Tools";
+}
+
+async function categorizeSkillsBatch(skills, existingCategories = []) {
+  try {
+    const resp = await fetch("/api/skills/categorize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ skills, existing_categories: existingCategories })
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.assignments) return data.assignments;
+    }
+  } catch (e) {
+    // Fallback to client classifier
+  }
+  const fallback = {};
+  for (const s of skills) {
+    fallback[s] = classifySkillClient(s, existingCategories);
+  }
+  return fallback;
+}
+
 
 function apiKeyStorageKey(provider) {
   return `smartjobai_api_key_${provider}`;
@@ -171,6 +356,11 @@ function renderTailoredSkills() {
     container.appendChild(box);
   });
 
+  const newCatOpt = document.createElement("option");
+  newCatOpt.value = "__NEW__";
+  newCatOpt.textContent = "+ Create New Category...";
+  categorySelect.appendChild(newCatOpt);
+
   if (currentSelectedCategory && Array.from(categorySelect.options).some(o => o.value === currentSelectedCategory)) {
     categorySelect.value = currentSelectedCategory;
   }
@@ -207,40 +397,64 @@ function addSkillToTailored(categoryName, skillName) {
 async function addSelectedKeywordsToSkills() {
   const btn = document.getElementById("add-keywords-btn");
   btn.disabled = true;
-  setStatus("add-keywords-status", "Adding to your tailored skills & profile...");
+  setStatus("add-keywords-status", "Matching skills to specific categories...");
 
   try {
     const toAdd = Array.from(selectedMissingKeywords);
-    let category = tailoredSkills.find((s) => s.category === ADDED_SKILLS_CATEGORY);
-    if (!category) {
-      category = { category: ADDED_SKILLS_CATEGORY, items: [] };
-      tailoredSkills.push(category);
-    }
-    const existingLower = new Set(category.items.map((i) => i.toLowerCase()));
+    if (!toAdd.length) return;
+
+    const currentCatNames = tailoredSkills.map(s => s.category);
+    const assignments = await categorizeSkillsBatch(toAdd, currentCatNames);
+
+    // Group additions by their specific target category
+    const addedSummary = {}; // catName -> [skills]
+
     for (const kw of toAdd) {
-      if (!existingLower.has(kw.toLowerCase())) category.items.push(kw);
+      const targetCatName = assignments[kw] || classifySkillClient(kw, currentCatNames);
+      let targetCat = tailoredSkills.find(s => s.category.toLowerCase() === targetCatName.toLowerCase());
+      if (!targetCat) {
+        targetCat = { category: targetCatName, items: [] };
+        tailoredSkills.push(targetCat);
+      }
+      const existingLower = new Set(targetCat.items.map(i => i.toLowerCase()));
+      if (!existingLower.has(kw.toLowerCase())) {
+        targetCat.items.push(kw);
+      }
+      if (!addedSummary[targetCat.category]) addedSummary[targetCat.category] = [];
+      addedSummary[targetCat.category].push(kw);
     }
+
     renderTailoredSkills();
 
-    // Also persist to profile
+    // Also persist to master profile
     const resp = await fetch("/api/profile");
     if (resp.ok) {
       const profile = await resp.json();
-      let profCat = profile.skills.find((s) => s.category === ADDED_SKILLS_CATEGORY);
-      if (!profCat) {
-        profCat = { category: ADDED_SKILLS_CATEGORY, items: [] };
-        profile.skills.push(profCat);
+      if (!profile.skills) profile.skills = [];
+
+      for (const [catName, items] of Object.entries(addedSummary)) {
+        let profCat = profile.skills.find(s => s.category.toLowerCase() === catName.toLowerCase());
+        if (!profCat) {
+          profCat = { category: catName, items: [] };
+          profile.skills.push(profCat);
+        }
+        const profLower = new Set(profCat.items.map(i => i.toLowerCase()));
+        for (const item of items) {
+          if (!profLower.has(item.toLowerCase())) {
+            profCat.items.push(item);
+          }
+        }
       }
-      const profLower = new Set(profCat.items.map((i) => i.toLowerCase()));
-      for (const kw of toAdd) {
-        if (!profLower.has(kw.toLowerCase())) profCat.items.push(kw);
-      }
-      await fetch("/api/profile", {
+
+      const putResp = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(profile),
       });
-      masterProfileSkills = JSON.parse(JSON.stringify(profile.skills));
+      if (putResp.ok) {
+        const updatedProfile = await putResp.json();
+        masterProfileSkills = JSON.parse(JSON.stringify(updatedProfile.skills));
+      }
     }
 
     lastResult.missing_keywords = lastResult.missing_keywords.filter((k) => !toAdd.includes(k));
@@ -249,9 +463,11 @@ async function addSelectedKeywordsToSkills() {
 
     renderChips();
     updateScoreDisplay();
+
+    const summaryParts = Object.entries(addedSummary).map(([cat, items]) => `${cat} (${items.length})`);
     setStatus(
       "add-keywords-status",
-      `Added ${toAdd.length > 1 ? toAdd.length + " skills" : '"' + toAdd[0] + '"'} to active CV skills.`
+      `Added ${toAdd.length} skill${toAdd.length > 1 ? "s" : ""} to specific categories: ${summaryParts.join(", ")}.`
     );
   } catch (err) {
     setStatus("add-keywords-status", "Error: " + err.message, true);
@@ -390,17 +606,31 @@ document.addEventListener("DOMContentLoaded", () => {
   if (addCustomSkillBtn && newSkillInput && newSkillCatSelect) {
     const handleAdd = () => {
       const val = newSkillInput.value.trim();
-      const cat = newSkillCatSelect.value;
-      if (val && cat) {
-        addSkillToTailored(cat, val);
-        newSkillInput.value = "";
+      let cat = newSkillCatSelect.value;
+      if (!val) return;
+      if (cat === "__NEW__") {
+        const customCat = prompt("Enter new skill category name (e.g. Cloud & Infrastructure, Mobile Development):");
+        if (!customCat || !customCat.trim()) return;
+        cat = customCat.trim();
       }
+      addSkillToTailored(cat, val);
+      newSkillInput.value = "";
     };
     addCustomSkillBtn.addEventListener("click", handleAdd);
     newSkillInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
         handleAdd();
+      }
+    });
+    newSkillInput.addEventListener("input", () => {
+      const val = newSkillInput.value.trim();
+      if (val.length >= 2 && newSkillCatSelect.value !== "__NEW__") {
+        const predicted = classifySkillClient(val, tailoredSkills.map(s => s.category));
+        const matchingOpt = Array.from(newSkillCatSelect.options).find(o => o.value.toLowerCase() === predicted.toLowerCase());
+        if (matchingOpt) {
+          newSkillCatSelect.value = matchingOpt.value;
+        }
       }
     });
   }

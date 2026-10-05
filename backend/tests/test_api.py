@@ -59,3 +59,20 @@ def test_page_routes_serve_html():
             assert "text/html" in resp.headers["content-type"]
             assert b"SmartJob" in resp.content or b"Kage" in resp.content
 
+
+def test_categorize_skills_api():
+    with TestClient(app) as client:
+        resp = client.post(
+            "/api/skills/categorize",
+            json={
+                "skills": ["SQL queries", "Git", "Docker", "Tableau"],
+                "existing_categories": ["Programming Languages", "Tools"],
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()["assignments"]
+        assert data["SQL queries"] == "Programming Languages"
+        assert data["Git"] == "Tools"
+        assert data["Docker"] == "Cloud & DevOps"
+        assert data["Tableau"] == "BI & Visualization"
+

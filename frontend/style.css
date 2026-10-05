@@ -1414,11 +1414,18 @@ button.tiny {
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
   padding: 1rem;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tailored-cat-box:hover {
   border-color: rgba(223, 231, 224, 0.2);
+}
+
+.tailored-cat-box.drag-target {
+  border: 1px dashed var(--vermilion);
+  background: rgba(224, 35, 28, 0.08);
+  box-shadow: 0 0 20px -2px rgba(224, 35, 28, 0.25);
+  transform: translateY(-1px);
 }
 
 .tailored-cat-header {
@@ -1442,11 +1449,36 @@ button.tiny {
   font-variant-numeric: tabular-nums;
 }
 
+.cat-del-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 3px;
+  opacity: 0.5;
+  transition: all 0.15s ease;
+}
+
+.cat-del-btn:hover {
+  opacity: 1;
+  color: #ff554f;
+  transform: scale(1.2);
+}
+
 .tailored-cat-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  min-height: 28px;
+  min-height: 34px;
+  padding: 0.2rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s ease;
+}
+
+.tailored-cat-box.drag-target .tailored-cat-chips {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .tailored-skill-pill {
@@ -1457,14 +1489,56 @@ button.tiny {
   border: 1px solid rgba(223, 231, 224, 0.14);
   color: var(--bone);
   font-size: 11px;
-  padding: 0.25rem 0.6rem 0.25rem 0.75rem;
+  padding: 0.25rem 0.55rem 0.25rem 0.55rem;
   border-radius: var(--radius-sm);
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: element;
 }
 
 .tailored-skill-pill:hover {
-  border-color: rgba(223, 231, 224, 0.3);
+  border-color: rgba(223, 231, 224, 0.35);
   background: rgba(25, 33, 44, 0.95);
+  transform: translateY(-1px);
+}
+
+.tailored-skill-pill:active {
+  cursor: grabbing;
+}
+
+.tailored-skill-pill.dragging {
+  opacity: 0.35;
+  transform: scale(0.95);
+  border: 1px dashed var(--vermilion);
+  box-shadow: none;
+}
+
+.tailored-skill-pill.drop-before {
+  border-left: 2px solid var(--vermilion);
+  box-shadow: -4px 0 10px rgba(224, 35, 28, 0.35);
+}
+
+.tailored-skill-pill.drop-after {
+  border-right: 2px solid var(--vermilion);
+  box-shadow: 4px 0 10px rgba(224, 35, 28, 0.35);
+}
+
+.skill-drag-grip {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+  opacity: 0.35;
+  font-size: 10px;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  cursor: grab;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.tailored-skill-pill:hover .skill-drag-grip {
+  opacity: 0.9;
+  color: var(--vermilion);
 }
 
 .tailored-skill-pill .skill-del-btn {
@@ -1490,7 +1564,7 @@ button.tiny {
   font-size: 11px;
   color: var(--muted);
   font-style: italic;
-  padding: 0.25rem 0;
+  padding: 0.35rem 0.2rem;
 }
 
 .add-skill-bar {

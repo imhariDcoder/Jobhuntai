@@ -284,7 +284,50 @@ function toggleMissingKeyword(kw) {
   renderChips();
 }
 
-/* ============================================================= Tailored Skills Logic */
+/* ============================================================= Tailored Skills Drag & Drop Logic */
+let draggedSkill = null; // { catIdx, itemIdx, skillName }
+
+function moveSkill(sourceCatIdx, sourceItemIdx, targetCatIdx, targetInsertIdx) {
+  if (!tailoredSkills[sourceCatIdx] || !tailoredSkills[targetCatIdx]) return;
+  const sourceItems = tailoredSkills[sourceCatIdx].items;
+  const targetItems = tailoredSkills[targetCatIdx].items;
+
+  if (sourceItemIdx < 0 || sourceItemIdx >= sourceItems.length) return;
+  const skill = sourceItems[sourceItemIdx];
+
+  const sourceCatName = tailoredSkills[sourceCatIdx].category;
+  const targetCatName = tailoredSkills[targetCatIdx].category;
+
+  // Case 1: Same category reordering
+  if (sourceCatIdx === targetCatIdx) {
+    if (sourceItemIdx === targetInsertIdx || sourceItemIdx === targetInsertIdx - 1) {
+      return;
+    }
+    sourceItems.splice(sourceItemIdx, 1);
+    const adjustedIdx = targetInsertIdx > sourceItemIdx ? targetInsertIdx - 1 : targetInsertIdx;
+    sourceItems.splice(Math.max(0, Math.min(adjustedIdx, sourceItems.length)), 0, skill);
+    renderTailoredSkills();
+    setStatus("skills-sync-status", `Reordered "${skill}" in ${sourceCatName}.`);
+    return;
+  }
+
+  // Case 2: Move to different category
+  const targetExisting = new Set(targetItems.map((i) => i.toLowerCase()));
+  if (targetExisting.has(skill.toLowerCase())) {
+    setStatus("skills-sync-status", `"${skill}" is already present in ${targetCatName}.`, true);
+    return;
+  }
+
+  // Remove from source
+  sourceItems.splice(sourceItemIdx, 1);
+  // Insert into target
+  const safeInsertIdx = Math.max(0, Math.min(targetInsertIdx, targetItems.length));
+  targetItems.splice(safeInsertIdx, 0, skill);
+
+  renderTailoredSkills();
+  setStatus("skills-sync-status", `Moved "${skill}" from ${sourceCatName} → ${targetCatName}.`);
+}
+
 function renderTailoredSkills() {
   const container = document.getElementById("tailored-skills-list");
   if (!container) return;
@@ -304,6 +347,28 @@ function renderTailoredSkills() {
     // Build category box
     const box = document.createElement("div");
     box.className = "tailored-cat-box";
+    box.setAttribute("data-cat-idx", catIdx);
+
+    // Drag-over container listeners for dropping onto category box
+    box.addEventListener("dragover", (e) => {
+      if (!draggedSkill) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      box.classList.add("drag-target");
+    });
+
+    box.addEventListener("dragleave", (e) => {
+      if (!box.contains(e.relatedTarget)) {
+        box.classList.remove("drag-target");
+      }
+    });
+
+    box.addEventListener("drop", (e) => {
+      if (!draggedSkill) return;
+      e.preventDefault();
+      box.classList.remove("drag-target");
+      moveSkill(draggedSkill.catIdx, draggedSkill.itemIdx, catIdx, catObj.items.length);
+    });
 
     const header = document.createElement("div");
     header.className = "tailored-cat-header";
@@ -312,12 +377,32 @@ function renderTailoredSkills() {
     title.className = "tailored-cat-title";
     title.textContent = catObj.category;
 
+    const headerRight = document.createElement("div");
+    headerRight.style.display = "flex";
+    headerRight.style.alignItems = "center";
+    headerRight.style.gap = "0.6rem";
+
     const count = document.createElement("span");
     count.className = "tailored-cat-count";
     count.textContent = `${catObj.items.length} skill${catObj.items.length === 1 ? "" : "s"}`;
+    headerRight.appendChild(count);
+
+    const delCatBtn = document.createElement("button");
+    delCatBtn.type = "button";
+    delCatBtn.className = "cat-del-btn";
+    delCatBtn.innerHTML = "&times;";
+    delCatBtn.title = `Remove entire "${catObj.category}" category from this resume`;
+    delCatBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const catName = catObj.category;
+      tailoredSkills.splice(catIdx, 1);
+      renderTailoredSkills();
+      setStatus("skills-sync-status", `Removed "${catName}" category from this resume.`);
+    });
+    headerRight.appendChild(delCatBtn);
 
     header.appendChild(title);
-    header.appendChild(count);
+    header.appendChild(headerRight);
     box.appendChild(header);
 
     const chipsWrap = document.createElement("div");
@@ -326,12 +411,19 @@ function renderTailoredSkills() {
     if (!catObj.items || catObj.items.length === 0) {
       const emptyMsg = document.createElement("div");
       emptyMsg.className = "tailored-cat-empty";
-      emptyMsg.textContent = "No skills active (excluded from this resume)";
+      emptyMsg.textContent = "No skills active — drop skills here or add below";
       chipsWrap.appendChild(emptyMsg);
     } else {
       catObj.items.forEach((item, itemIdx) => {
         const pill = document.createElement("span");
         pill.className = "tailored-skill-pill";
+        pill.draggable = true;
+        pill.title = "Drag to reorder or move to another category";
+
+        const grip = document.createElement("span");
+        grip.className = "skill-drag-grip";
+        grip.textContent = "⋮⋮";
+        pill.appendChild(grip);
 
         const textSpan = document.createElement("span");
         textSpan.textContent = item;
@@ -348,6 +440,56 @@ function renderTailoredSkills() {
         });
         pill.appendChild(delBtn);
 
+        // Drag start & end on pill
+        pill.addEventListener("dragstart", (e) => {
+          draggedSkill = { catIdx, itemIdx, skillName: item };
+          pill.classList.add("dragging");
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", JSON.stringify(draggedSkill));
+          e.stopPropagation();
+        });
+
+        pill.addEventListener("dragend", () => {
+          pill.classList.remove("dragging");
+          draggedSkill = null;
+          document.querySelectorAll(".tailored-cat-box.drag-target").forEach((b) => b.classList.remove("drag-target"));
+          document.querySelectorAll(".tailored-skill-pill.drop-before, .tailored-skill-pill.drop-after").forEach((p) => {
+            p.classList.remove("drop-before", "drop-after");
+          });
+        });
+
+        pill.addEventListener("dragover", (e) => {
+          if (!draggedSkill) return;
+          e.preventDefault();
+          e.stopPropagation();
+          e.dataTransfer.dropEffect = "move";
+
+          const rect = pill.getBoundingClientRect();
+          const relX = e.clientX - rect.left;
+          const isAfter = relX > rect.width / 2;
+
+          pill.classList.toggle("drop-before", !isAfter);
+          pill.classList.toggle("drop-after", isAfter);
+        });
+
+        pill.addEventListener("dragleave", () => {
+          pill.classList.remove("drop-before", "drop-after");
+        });
+
+        pill.addEventListener("drop", (e) => {
+          if (!draggedSkill) return;
+          e.preventDefault();
+          e.stopPropagation();
+          pill.classList.remove("drop-before", "drop-after");
+
+          const rect = pill.getBoundingClientRect();
+          const relX = e.clientX - rect.left;
+          const isAfter = relX > rect.width / 2;
+          const targetInsertIdx = isAfter ? itemIdx + 1 : itemIdx;
+
+          moveSkill(draggedSkill.catIdx, draggedSkill.itemIdx, catIdx, targetInsertIdx);
+        });
+
         chipsWrap.appendChild(pill);
       });
     }
@@ -361,7 +503,7 @@ function renderTailoredSkills() {
   newCatOpt.textContent = "+ Create New Category...";
   categorySelect.appendChild(newCatOpt);
 
-  if (currentSelectedCategory && Array.from(categorySelect.options).some(o => o.value === currentSelectedCategory)) {
+  if (currentSelectedCategory && Array.from(categorySelect.options).some((o) => o.value === currentSelectedCategory)) {
     categorySelect.value = currentSelectedCategory;
   }
 }

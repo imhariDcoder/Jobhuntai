@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SmartJobAI — Master Profile</title>
-  <link rel="stylesheet" href="/static/style.css?v=1.0.7" />
+  <link rel="stylesheet" href="/static/style.css?v=1.0.8" />
 </head>
 <body>
   <!-- ============================================================ Kage Preloader -->
@@ -46,7 +46,7 @@
     </div>
   </header>
 
-  <main class="page">
+  <main class="page has-live-preview">
     <div class="hero">
       <div class="eyebrow">
         <span class="dot"></span>
@@ -58,75 +58,114 @@
       </p>
     </div>
 
-    <form id="profile-form">
-      <div class="section-header">
-        <span class="section-eyebrow"><b>01</b> / Identity</span>
-        <h2>Contact &amp; Header</h2>
-        <span class="rule"></span>
+    <div class="profile-workspace">
+      <div class="profile-controls">
+        <form id="profile-form">
+          <div class="section-header">
+            <span class="section-eyebrow"><b>01</b> / Identity</span>
+            <h2>Contact &amp; Header</h2>
+            <span class="rule"></span>
+          </div>
+          <div class="card">
+            <div class="row-2">
+              <div><label for="field-name">Full Name</label><input type="text" id="field-name" placeholder="e.g. Jane Doe" /></div>
+              <div><label for="field-phone">Phone Number</label><input type="text" id="field-phone" placeholder="e.g. +1 (555) 000-0000" /></div>
+            </div>
+            <div class="row-2">
+              <div><label for="field-email">Email Address</label><input type="email" id="field-email" placeholder="e.g. jane@example.com" /></div>
+              <div><label for="field-location">Location</label><input type="text" id="field-location" placeholder="e.g. New York, NY" /></div>
+            </div>
+            <div class="row-2">
+              <div><label for="field-linkedin">LinkedIn Profile URL</label><input type="text" id="field-linkedin" placeholder="e.g. linkedin.com/in/janedoe" /></div>
+              <div><label for="field-github">GitHub Profile URL</label><input type="text" id="field-github" placeholder="e.g. github.com/janedoe" /></div>
+            </div>
+            <label for="field-summary">Executive Summary</label>
+            <textarea id="field-summary" rows="3" placeholder="Brief professional overview highlighting your core strengths and expertise..."></textarea>
+          </div>
+
+          <div class="section-header">
+            <span class="section-eyebrow"><b>02</b> / Background</span>
+            <h2>Education</h2>
+            <span class="rule"></span>
+          </div>
+          <div id="education-list"></div>
+          <button type="button" class="add" id="add-education">+ Add Education Entry</button>
+
+          <div class="section-header">
+            <span class="section-eyebrow"><b>03</b> / Track Record</span>
+            <h2>Experience &amp; Training</h2>
+            <span class="rule"></span>
+          </div>
+          <div id="experience-list"></div>
+          <button type="button" class="add" id="add-experience">+ Add Experience / Training Entry</button>
+
+          <div class="section-header">
+            <span class="section-eyebrow"><b>04</b> / Portfolio</span>
+            <h2>Projects</h2>
+            <span class="rule"></span>
+          </div>
+          <div id="projects-list"></div>
+          <button type="button" class="add" id="add-project">+ Add Project Entry</button>
+
+          <div class="section-header">
+            <span class="section-eyebrow"><b>05</b> / Arsenal</span>
+            <h2>Skills</h2>
+            <span class="rule"></span>
+          </div>
+          <div id="skills-list"></div>
+          <button type="button" class="add" id="add-skill">+ Add Skill Category</button>
+
+          <div class="section-header">
+            <span class="section-eyebrow"><b>06</b> / Credentials</span>
+            <h2>Certifications</h2>
+            <span class="rule"></span>
+          </div>
+          <div id="certifications-list"></div>
+          <button type="button" class="add" id="add-certification">+ Add Certification</button>
+
+          <div class="action-bar">
+            <button type="button" class="secondary" id="save-profile">Save Profile</button>
+            <button type="submit" class="primary">Save &amp; Preview PDF</button>
+            <div id="status"></div>
+          </div>
+        </form>
       </div>
-      <div class="card">
-        <div class="row-2">
-          <div><label for="field-name">Full Name</label><input type="text" id="field-name" placeholder="e.g. Jane Doe" /></div>
-          <div><label for="field-phone">Phone Number</label><input type="text" id="field-phone" placeholder="e.g. +1 (555) 000-0000" /></div>
+
+      <!-- Sticky Live PDF Preview Dock -->
+      <div class="profile-preview-dock">
+        <div class="live-preview-card">
+          <div class="live-preview-header">
+            <div class="live-preview-meta">
+              <span class="live-indicator-dot"></span>
+              <span class="live-preview-heading">Live PDF Preview</span>
+              <span id="page-budget-badge" class="page-budget-badge optimal" title="Estimates page budget density">✓ 1-Page Optimal</span>
+            </div>
+            <div class="live-preview-actions">
+              <button type="button" class="secondary tiny" id="live-pdf-refresh-btn" title="Refresh Live PDF Preview">⚡ Update</button>
+              <button type="button" class="secondary tiny" id="live-pdf-fullscreen-btn" title="Open Fullscreen Preview">⛶ Fullscreen</button>
+              <button type="button" class="primary tiny" id="live-pdf-download-btn" title="Download Master PDF">⬇ Download</button>
+            </div>
+          </div>
+
+          <div class="live-preview-body">
+            <div id="live-pdf-spinner" class="live-pdf-spinner" style="display: none;">
+              <div class="spinner"></div>
+              <span>Compiling Live Master PDF...</span>
+            </div>
+            <div id="live-pdf-placeholder" class="live-pdf-placeholder">
+              <div class="placeholder-icon">📄</div>
+              <div>Generating live PDF preview...</div>
+            </div>
+            <iframe id="live-pdf-iframe" class="live-pdf-iframe" style="display: none;" title="Live PDF Preview"></iframe>
+          </div>
+
+          <div class="live-preview-footer">
+            <div class="live-pdf-filename" id="live-pdf-filename">Resume.pdf</div>
+            <span class="live-pdf-subtext">Real-time PDF compiler · LaTeX Engine</span>
+          </div>
         </div>
-        <div class="row-2">
-          <div><label for="field-email">Email Address</label><input type="email" id="field-email" placeholder="e.g. jane@example.com" /></div>
-          <div><label for="field-location">Location</label><input type="text" id="field-location" placeholder="e.g. New York, NY" /></div>
-        </div>
-        <div class="row-2">
-          <div><label for="field-linkedin">LinkedIn Profile URL</label><input type="text" id="field-linkedin" placeholder="e.g. linkedin.com/in/janedoe" /></div>
-          <div><label for="field-github">GitHub Profile URL</label><input type="text" id="field-github" placeholder="e.g. github.com/janedoe" /></div>
-        </div>
-        <label for="field-summary">Executive Summary</label>
-        <textarea id="field-summary" rows="3" placeholder="Brief professional overview highlighting your core strengths and expertise..."></textarea>
       </div>
-
-      <div class="section-header">
-        <span class="section-eyebrow"><b>02</b> / Background</span>
-        <h2>Education</h2>
-        <span class="rule"></span>
-      </div>
-      <div id="education-list"></div>
-      <button type="button" class="add" id="add-education">+ Add Education Entry</button>
-
-      <div class="section-header">
-        <span class="section-eyebrow"><b>03</b> / Track Record</span>
-        <h2>Experience &amp; Training</h2>
-        <span class="rule"></span>
-      </div>
-      <div id="experience-list"></div>
-      <button type="button" class="add" id="add-experience">+ Add Experience / Training Entry</button>
-
-      <div class="section-header">
-        <span class="section-eyebrow"><b>04</b> / Portfolio</span>
-        <h2>Projects</h2>
-        <span class="rule"></span>
-      </div>
-      <div id="projects-list"></div>
-      <button type="button" class="add" id="add-project">+ Add Project Entry</button>
-
-      <div class="section-header">
-        <span class="section-eyebrow"><b>05</b> / Arsenal</span>
-        <h2>Skills</h2>
-        <span class="rule"></span>
-      </div>
-      <div id="skills-list"></div>
-      <button type="button" class="add" id="add-skill">+ Add Skill Category</button>
-
-      <div class="section-header">
-        <span class="section-eyebrow"><b>06</b> / Credentials</span>
-        <h2>Certifications</h2>
-        <span class="rule"></span>
-      </div>
-      <div id="certifications-list"></div>
-      <button type="button" class="add" id="add-certification">+ Add Certification</button>
-
-      <div class="action-bar">
-        <button type="button" class="secondary" id="save-profile">Save Profile</button>
-        <button type="submit" class="primary">Save &amp; Preview PDF</button>
-        <div id="status"></div>
-      </div>
-    </form>
+    </div>
   </main>
 
   <div class="modal-overlay" id="pdf-modal-overlay" style="display: none;">
@@ -145,6 +184,6 @@
 
   <script src="/static/mountain-canvas.js?v=1.0.7"></script>
   <script src="/static/ui.js?v=1.0.7"></script>
-  <script src="/static/app.js?v=1.0.7"></script>
+  <script src="/static/app.js?v=1.0.8"></script>
 </body>
 </html>

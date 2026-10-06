@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 class Bullet(BaseModel):
     id: Optional[str] = None
-    text: str
+    text: str = ""
     keywords: list[str] = Field(default_factory=list)
 
 
@@ -27,7 +27,7 @@ class Education(BaseModel):
 
 class Experience(BaseModel):
     id: Optional[str] = None
-    type: str  # "job" | "training"
+    type: str = "job"  # "job" | "training"
     org: Optional[str] = None
     role: Optional[str] = None
     location: Optional[str] = None

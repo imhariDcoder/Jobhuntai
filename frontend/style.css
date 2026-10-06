@@ -1818,12 +1818,14 @@ button.tiny {
   color: var(--muted);
 }
 
-/* ============================================================= Tailor Workspace & Live PDF Preview */
-.page.has-results {
+/* ============================================================= Workspace & Live PDF Preview */
+.page.has-results,
+.page.has-live-preview {
   max-width: 1440px;
   transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.profile-workspace,
 .tailor-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(380px, 0.95fr);
@@ -1832,15 +1834,25 @@ button.tiny {
 }
 
 @media (max-width: 1080px) {
+  .profile-workspace,
   .tailor-workspace {
     grid-template-columns: 1fr;
   }
+  .profile-preview-dock,
+  .tailor-preview-dock {
+    position: static;
+  }
+  .live-preview-card {
+    height: 600px;
+  }
 }
 
+.profile-controls,
 .tailor-controls {
   min-width: 0;
 }
 
+.profile-preview-dock,
 .tailor-preview-dock {
   position: sticky;
   top: calc(var(--nav-h) + 1rem);

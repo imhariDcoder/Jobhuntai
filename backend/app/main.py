@@ -83,16 +83,29 @@ def categorize_skills_endpoint(req: CategorizeSkillsRequest) -> CategorizeSkills
 
 
 @app.post("/api/resume/render")
-def render_resume() -> FileResponse:
-    """Mode 1: render the stored profile through the Step 1 injector and
-    compile it with tectonic, unmodified from how Step 1 proved it out."""
-    with get_session() as session:
-        profile_dict = crud.get_full_profile(session)
+def render_resume(profile: Optional[Profile] = None) -> FileResponse:
+    """Mode 1: render the stored profile (or directly provided profile) through
+    the injector and compile it with tectonic. If a profile is provided in the
+    request body, renders that profile directly to support live previews before
+    saving. Otherwise, loads the stored profile from the database."""
+    if profile is not None:
+        profile_dict = profile.model_dump()
+    else:
+        with get_session() as session:
+            profile_dict = crud.get_full_profile(session)
 
     tex = render_resume_tex(profile_dict)
     pdf_path = compile_tex_to_pdf(tex)
 
-    return FileResponse(pdf_path, media_type="application/pdf", filename="resume.pdf")
+    filename = "resume.pdf"
+    if profile_dict.get("name"):
+        safe_name = "".join(
+            c for c in profile_dict["name"] if c.isalnum() or c in (" ", "_", "-")
+        ).strip().replace(" ", "_")
+        if safe_name:
+            filename = f"{safe_name}_Resume.pdf"
+
+    return FileResponse(pdf_path, media_type="application/pdf", filename=filename)
 
 
 class TailorRequest(BaseModel):

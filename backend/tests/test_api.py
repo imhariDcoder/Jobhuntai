@@ -1,3 +1,5 @@
+import copy
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -6,9 +8,9 @@ from fixtures.dummy_profile import DUMMY_PROFILE
 
 def _as_api_payload(profile: dict) -> dict:
     """DUMMY_PROFILE's bullets are {id, text, keywords}; the API's Bullet
-    schema uses the same shape, so this is a passthrough copy for clarity
-    at the call site."""
-    return profile
+    schema uses the same shape, so this is a passthrough deepcopy for clarity
+    at the call site without mutating the shared fixture."""
+    return copy.deepcopy(profile)
 
 
 def test_put_then_get_profile_roundtrips():
@@ -34,6 +36,17 @@ def test_render_resume_produces_a_pdf():
         assert resp.status_code == 200
         assert resp.headers["content-type"] == "application/pdf"
         assert resp.content[:5] == b"%PDF-"
+
+
+def test_render_resume_with_payload_produces_a_pdf():
+    with TestClient(app) as client:
+        payload = _as_api_payload(DUMMY_PROFILE)
+        payload["name"] = "Alice Live Tester"
+        resp = client.post("/api/resume/render", json=payload)
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == "application/pdf"
+        assert resp.content[:5] == b"%PDF-"
+        assert "Alice_Live_Tester_Resume.pdf" in resp.headers.get("content-disposition", "")
 
 
 def test_put_replaces_previous_data_entirely():
